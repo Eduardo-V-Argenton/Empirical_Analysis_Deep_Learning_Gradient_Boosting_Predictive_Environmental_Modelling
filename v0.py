@@ -342,6 +342,8 @@ for epoch in range(epochs):
         losses_json.append(epoch_loss)
 
 # %%
+# model.load_state_dict(torch.load('models_pth/v0.pth', weights_only=True))
+# %%
 rounded_loss =[round(loss,4) for loss in losses_json]
 json.dumps(rounded_loss)
 # %%
@@ -428,7 +430,6 @@ plt.xlabel("Amostras")
 plt.ylabel("Valor")
 plt.legend()
 plt.title("Comparação entre Valores Reais e Previsões (Amostra)")
-plt.show()
 plt.savefig('real_vs_predicted.png')
 # %%
 import matplotlib.pyplot as plt
@@ -439,7 +440,6 @@ plt.plot([np.mean(losses[max(0, i-window_size):i+1]) for i in range(len(losses))
 plt.legend()
 plt.xlabel('Época')
 plt.ylabel('Loss')
-plt.show()
 plt.savefig('loss_over_epochs.png')
 
 # %%
