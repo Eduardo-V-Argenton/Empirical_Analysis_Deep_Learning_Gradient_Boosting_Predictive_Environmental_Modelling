@@ -1,4 +1,3 @@
-
 # %%
 import pandas as pd
 import numpy as np
@@ -9,8 +8,16 @@ import torch.nn as nn
 import numpy as np
 import pandas as pd
 import json
-from plotnine import ggplot, aes, geom_line, labs, theme_minimal, theme
-from torch.nn.modules import PReLU
+from sklearn.preprocessing import (
+    StandardScaler,
+    MinMaxScaler,
+    RobustScaler,
+    FunctionTransformer,
+    PowerTransformer
+)
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+import matplotlib.pyplot as plt
 
 # %%
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -21,9 +28,11 @@ print(torch.version.hip)  # Verifique a versão HIP
 torch.manual_seed(42)
 torch.cuda.manual_seed(42)
 np.random.seed(42)
+
+# %% [markdown]
+# Na célula abaixo temos o sintetizador de dados, os quais foram gerados com base em padrões do litoral paulista
+#. Essas funções foram geradas por IA, usando relações já conhecidas entre as variáveis
 # %%
-# Configurações iniciais
-np.random.seed(42)
 start_date = '2025-01-01'
 end_date = '2035-12-31'
 freq = 'h'
@@ -130,30 +139,16 @@ data.drop(['hour', 'month'], axis=1, inplace=True)
 data.head()
 
 # %%
-
-#data.set_index('datetime', inplace=True)
-#data.head()
-# %%
-# %%
 print(data.isnull().sum())  # Verifique colunas com NaN
 
 # Preencha valores ausentes (usando forward-fill e backward-fill)
 data.fillna(method='ffill', inplace=True)  # Preenche com o valor anterior
 data.fillna(method='bfill', inplace=True)  # Preenche com o próximo valor (caso o primeiro valor seja NaN)
 
-# %%
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import (
-    StandardScaler,
-    MinMaxScaler,
-    RobustScaler,
-    FunctionTransformer,
-    PowerTransformer
-)
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
+# %% [markdown]
+# Abaixo temos um ColumnTransformer para normalizar os valores de X_test e X_train.
 
+# %%
 # Transformação para direção do vento (circular)
 def transform_wind_direction(X):
     wind_dir_rad = np.deg2rad(X)  # Converte graus para radianos
@@ -221,8 +216,11 @@ X_test_seq, y_test_seq = create_sequences(X_test_scaled, y_test_scaled, seq_leng
 
 print(f"Formato do treino: {X_train_seq.shape} {y_train_seq.shape}")  # (amostras, look_back, características)
 print(f"Formato do teste: {X_test_seq.shape} {y_test_seq.shape}")
-# %%
 
+# %% [markdown]
+# O logCoshLoss foi sugerido pela IA para melhorar a eficácia do modelo. E realmente se mostrou melhor que os outros
+# losses avaliados (Huber e MSE)
+# %%
 class LogCoshLoss(nn.Module):
     def __init__(self):
         super().__init__()
@@ -231,21 +229,11 @@ class LogCoshLoss(nn.Module):
         errors = preds - targets
         loss = torch.log(torch.cosh(errors + 1e-12))  # Evita log(0)
         return torch.mean(loss)
-# %%
-# 3. Definir modelo LSTM
-class LSTM(nn.Module):
-    def __init__(self, input_size=1, hidden_size=50, num_layers=1):
-        super().__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True,dropout=0.2)
-        self.linear = nn.Linear(hidden_size, 1)
 
-    def forward(self, x):
-        x, (hn, cn) = self.lstm(x)  # hn: hidden state, cn: cell state
-        x = self.linear(x[:, -1, :])  # Pegar apenas a última saída
-        return x
-
+# %% [markdown]
+# Mais uma vez, foi sugerido pela IA adicionar atenção ao modelo para melhorar a eficácia do modelo.
+# E mais uma vez se mostrou uma boa escolha.
 # %%
-# Modelo com atenção:
 class EnhancedLSTM(nn.Module):
     def __init__(self, input_size=1, hidden_size=50, num_layers=1):
         super().__init__()
@@ -271,9 +259,9 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer,
     mode='min',
-    factor=0.5,       # Redução menos agressiva (50% da LR atual)
-    patience=10,      # Dê mais tempo para o modelo após cada redução
-    min_lr=1e-6,      # Defina um LR mínimo menor (ex: 1e-6)
+    factor=0.5,
+    patience=10,
+    min_lr=1e-6,
 )
 # %%
 X_train = torch.FloatTensor(X_train_seq)
@@ -342,18 +330,9 @@ for epoch in range(epochs):
         losses_json.append(epoch_loss)
 
 # %%
-# model.load_state_dict(torch.load('models_pth/v0.pth', weights_only=True))
-# %%
 rounded_loss =[round(loss,4) for loss in losses_json]
 json.dumps(rounded_loss)
-# %%
-print("Shapes originais:")
-print(f"X_train_scaled: {X_train_scaled.shape}, y_train: {y_train.shape}")
-print(f"X_test_scaled: {X_test_scaled.shape}, y_test: {y_test.shape}")
 
-print("\nShapes após create_sequences:")
-print(f"X_train_seq: {X_train_seq.shape}, y_train_seq: {y_train_seq.shape}")
-print(f"X_test_seq: {X_test_seq.shape}, y_test_seq: {y_test_seq.shape}")
 # %%
 model.eval()
 predictions = []
@@ -400,6 +379,7 @@ print(f"MSE: {mse:.4f}")
 print(f"MAE: {mae:.4f}")
 print(f"MAPE: {mape:.4f}")
 print(f"R2: {r2:.4f}")
+
 # %%
 # Resíduos vs Tempo
 residuals = y_test_np - predictions_original
@@ -415,7 +395,6 @@ plot_acf(residuals, lags=40)
 plt.savefig('acf_residuos.png')
 
 # %%
-import matplotlib.pyplot as plt
 
 # Amostrar 100 pontos aleatórios
 sample_indices = np.random.choice(len(y_test_np), 100, replace=False)
@@ -432,7 +411,6 @@ plt.legend()
 plt.title("Comparação entre Valores Reais e Previsões (Amostra)")
 plt.savefig('real_vs_predicted.png')
 # %%
-import matplotlib.pyplot as plt
 
 plt.plot(losses, label='Loss por Época')
 plt.plot([np.mean(losses[max(0, i-window_size):i+1]) for i in range(len(losses))],
@@ -441,56 +419,3 @@ plt.legend()
 plt.xlabel('Época')
 plt.ylabel('Loss')
 plt.savefig('loss_over_epochs.png')
-
-# %%
-# Exemplo para a feature 'temperature' após StandardScaler
-import seaborn as sns
-
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 0])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'hour_sin' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 1])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'hour_cos' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 2])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'month_sin' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 3])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'month_cos' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 4])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'wind_direction_deg_sin' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 5])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'wind_direction_deg_cos' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 6])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'temperature' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 7])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'humidity' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 8])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'wind_speed_km/h' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 9])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'preciption' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 10])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'soil_moisture' (Padronizada)")
-plt.show()
-plt.figure(figsize=(10, 4))
-sns.boxplot(x=X_train_scaled[:, 11])  # Substitua 0 pelo índice da feature
-plt.title("Distribuição da Feature 'soil_temperature' (Padronizada)")
-plt.show()
