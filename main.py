@@ -14,7 +14,7 @@ from sklearn.ensemble import IsolationForest
 from pandas.api.types import CategoricalDtype
 from ydata_profiling import ProfileReport
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 import os
 import json
 
@@ -247,59 +247,66 @@ features_X = features_y + ['hour']
 X = df[features_X]
 y = df[features_y]
 # Separar treino e teste
-train_size = int(0.8 * len(X))  # 80% treino, 20% teste
-X_train_data = X.iloc[:train_size]
-X_test_data = X.iloc[train_size:]
+n = len(X)
+n_trainval = int(0.8 * n)
+n_test     = n - n_trainval
+n_train    = int(0.8 * n_trainval)
+n_val      = n_trainval - n_train
 
-train_size = int(0.8 * len(y))  # 80% treino, 20% teste
-y_train_data = y.iloc[:train_size]
-y_test_data = y.iloc[train_size:]
+X_train, X_val, X_test = (
+    X[:n_train],
+    X[n_train:n_train + n_val],
+    X[n_trainval:]
+)
+y_train, y_val, y_test = (
+    y[:n_train],
+    y[n_train:n_train + n_val],
+    y[n_trainval:]
+)
 
-X_scaler = MinMaxScaler(feature_range=(0, 1))
-X_scaler.fit(X_train_data)
+# 4) Escalonamento (fit apenas em treino)
+X_scaler = MinMaxScaler((0,1)); X_scaler.fit(X_train)
+y_scaler = MinMaxScaler((0,1)); y_scaler.fit(y_train)
 
-y_scaler = MinMaxScaler(feature_range=(0, 1))
-y_scaler.fit(y_train_data)
+X_train_s = X_scaler.transform(X_train)
+X_val_s   = X_scaler.transform(X_val)
+X_test_s  = X_scaler.transform(X_test)
 
-X_train_scaled = X_scaler.transform(X_train_data)
-X_test_scaled = X_scaler.transform(X_test_data)
-y_train_scaled = y_scaler.transform(y_train_data)
-y_test_scaled = y_scaler.transform(y_test_data)
+y_train_s = y_scaler.transform(y_train)
+y_val_s   = y_scaler.transform(y_val)
+y_test_s  = y_scaler.transform(y_test)
 
 # AGORA, vamos construir X e y para LSTM (com janela de tempo)
 
-def create_sequences(X_scaled, y_scaled, window_size):
-    Xs, ys = [], []
-    for i in range(len(X_scaled) - window_size):
-        Xs.append(X_scaled[i:i+window_size])    # sequência
-        ys.append(y_scaled[i+window_size])       # próximo passo
-    return np.array(Xs), np.array(ys)
+def create_sequences(Xs, ys, window_size):
+    X_seq, y_seq = [], []
+    for i in range(len(Xs) - window_size):
+        X_seq.append(Xs[i:i+window_size])
+        y_seq.append(ys[i+window_size])
+    return np.array(X_seq), np.array(y_seq)
 
 window_size = 25
-
-X_train, y_train = create_sequences(X_train_scaled,y_train_scaled, window_size)
-X_test, y_test = create_sequences(X_test_scaled, y_test_scaled, window_size)
-
-# %%
-X_train.shape, y_train.shape
+X_tr, y_tr = create_sequences(X_train_s, y_train_s, window_size)
+X_va, y_va = create_sequences(X_val_s,   y_val_s,   window_size)
+X_te, y_te = create_sequences(X_test_s,  y_test_s,  window_size)
 
 # %%
 # Hiperparâmetros
-input_size  = X_train.shape[2]  # n_features
-output_size  = y_train.shape[1]  # n_features
-hidden_size = 64
+input_size  = X_tr.shape[2]  # n_features
+output_size  = y_tr.shape[1]  # n_features
+hidden_size = 32
 num_layers  = 1
 lr          = 1e-3
 batch_size  = 32
 epochs      = 100
-seq_len     = X_train.shape[1]
+
 # %%
-# Dataset e DataLoader
-train_ds = TensorDataset(
-    torch.from_numpy(X_train).float(),
-    torch.from_numpy(y_train).float()
-)
-train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+train_loader = DataLoader(TensorDataset(torch.from_numpy(X_tr).float(),
+                                        torch.from_numpy(y_tr).float()),
+                          batch_size, shuffle=True)
+val_loader   = DataLoader(TensorDataset(torch.from_numpy(X_va).float(),
+                                        torch.from_numpy(y_va).float()),
+                          batch_size, shuffle=False)
 
 # %%
 # Modelo
@@ -314,16 +321,39 @@ class LSTM(nn.Module):
         return self.fc(h_last)              # (B, out_size)
 
 # %%
+class WeightedMSELoss(nn.Module):
+    def __init__(self, weights):
+        super().__init__()
+        # garante que 'weights' vira tensor float
+        w = torch.as_tensor(weights, dtype=torch.float32)
+        self.register_buffer('w', w)
+
+    def forward(self, pred, target):
+        se = (pred - target)**2         # (B, n_features)
+        return (se * self.w).mean()
+# %%
 model = LSTM(input_size, hidden_size, num_layers, output_size)
 model.to(device)
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer,
+    mode='min',
+    factor=0.5,
+    patience=10,
+    min_lr=1e-6,
+)
 
 # %%
 # Loop de treino
 train_losses = []
-model.train()
+val_losses = []
+y_pred = []
+y_true = []
+best_avg_loss = float('inf')
+epochs_since_best = 0
 for epoch in range(1, epochs+1):
+    model.train()
     total_loss = 0
     for xb, yb in train_loader:
         optimizer.zero_grad()
@@ -334,20 +364,69 @@ for epoch in range(1, epochs+1):
         total_loss += loss.item() * xb.size(0)
     avg_loss = total_loss / len(train_loader.dataset)
     train_losses.append(avg_loss)
+    scheduler.step(avg_loss)
+
+    if avg_loss < best_avg_loss:
+        best_avg_loss = avg_loss
+        epochs_since_best = 0
+        # print(f'New Best Avg Loss: {best_avg_loss:.5f}')
+    else:
+        epochs_since_best += 1
+
+        # Early stopping baseado na média móvel
+        if epochs_since_best > 20:
+            print(f'Early stopping at epoch {epoch}')
+            break
+
+    # VALIDATION
+    model.eval()
+    running_val = 0
+    with torch.inference_mode():
+        for xb, yb in val_loader:
+            xb, yb = xb.to(device), yb.to(device)
+            pred = model(xb)
+            running_val += criterion(pred, yb).item() * xb.size(0)
+    avg_val = running_val / len(val_loader.dataset)
+    val_losses.append(avg_val)
     if(epoch % 10 == 0):
-        print(f"Epoch {epoch:02d}, Loss {avg_loss:.4f}")
+        print(f"Epoch {epoch:02d}, Loss {avg_loss:.4f}, val_loss: {avg_val:.4f}")
+
 # %%
-X_test_t = torch.from_numpy(X_test).float().to(device)
-y_test_t = torch.from_numpy(y_test).float().to(device)
+X_test_t = torch.from_numpy(X_te).float().to(device)
+y_test_t = torch.from_numpy(y_te).float().to(device)
 
 # %%
 model.eval()
 with torch.inference_mode():
     y_pred_t = model(X_test_t)    # shape (N, n_features)
 
-# %%
 y_pred = y_scaler.inverse_transform(y_pred_t.cpu().numpy())
-y_true = y_scaler.inverse_transform(y_test)
+y_true = y_scaler.inverse_transform(y_te)
+
+# %%
+# 1) MSE e RMSE por feature
+mse  = ((y_true - y_pred)**2).mean(axis=0)
+rmse = np.sqrt(mse)
+
+# 2) Desvio-padrão real de cada feature
+std  = y_true.std(axis=0)
+
+# 3) Erro normalizado (NRMSE = RMSE / std)
+nrmse = rmse / std
+
+# 4) R² por feature (quanto da variância o modelo explica)
+r2    = [r2_score(y_true[:,i], y_pred[:,i])
+        for i in range(len(features_y))]
+
+df = pd.DataFrame({
+    'feature': features_y,
+    'std':     std,
+    'MSE':     mse,
+    'RMSE':    rmse,
+    'NRMSE':   nrmse,
+    'R2':      r2
+})
+print(df)
 
 # %%
 mse = mean_squared_error(y_pred, y_true)
@@ -358,15 +437,16 @@ print(f"RMSE: {rmse:.4f}")
 
 # %%
 # 2. Cria um index para as previsões: ele começa em train_size + window_size
+n = len(X_tr) + len(X_va)
+
 if isinstance(df.index, pd.DatetimeIndex):
-    idx_test = df.index[train_size + window_size : train_size + window_size + len(y_test)]
+    idx_test = df.index[n : n +  len(y_test)]
 else:
-    idx_test = np.arange(train_size + window_size,
-                         train_size + window_size + len(y_test))
+    idx_test = np.arange(n , n + window_size + len(y_test))
 
 # 3. DataFrames
-df_true = pd.DataFrame(y_true, index=idx_test, columns=features_y)
-df_pred = pd.DataFrame(y_pred, index=idx_test, columns=features_y)
+df_true = pd.DataFrame(y_true, index=idx_test[:3480], columns=features_y)
+df_pred = pd.DataFrame(y_pred, index=idx_test[:3480], columns=features_y)
 
 # Escolha um recorte de, digamos, 200 pontos
 start, end = 0, 200
@@ -415,7 +495,7 @@ print(f"Saved to {filename}")
 results = {
     "features_X":          features_X,
     "features_y":          features_y,
-    "train_size":          train_size,
+    "train_size":          n,
     "window_size":         window_size,
     "input_size":          input_size,
     "output_size":         output_size,
