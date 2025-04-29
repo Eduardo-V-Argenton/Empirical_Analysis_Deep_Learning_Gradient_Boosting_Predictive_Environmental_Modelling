@@ -288,7 +288,7 @@ X_train.shape, y_train.shape
 input_size  = X_train.shape[2]  # n_features
 output_size  = y_train.shape[1]  # n_features
 hidden_size = 64
-num_layers  = 2
+num_layers  = 1
 lr          = 1e-3
 batch_size  = 32
 epochs      = 100
@@ -350,20 +350,6 @@ y_pred = y_scaler.inverse_transform(y_pred_t.cpu().numpy())
 y_true = y_scaler.inverse_transform(y_test)
 
 # %%
-# Linha de base "persist yesterday": escolhe o último valor da janela como previsão.
-
-# 5.1) calcula no espaço escalonado
-y_base_scaled = X_test[:, -1, :len(features_y)]  # só as colunas de target, janela final
-# 5.2) inverte escala para unidades reais
-y_base = y_scaler.inverse_transform(y_base_scaled)
-
-# %%
-mse_base  = mean_squared_error(y_true, y_base)
-rmse_base = np.sqrt(mse_base)
-print(f"MSE:  {mse_base:.4f}")
-print(f"RMSE: {rmse_base:.4f}")
-
-# %%
 mse = mean_squared_error(y_pred, y_true)
 rmse = np.sqrt(mse)
 
@@ -415,7 +401,7 @@ plot = (
 
 def get_next_number(folder):
     numbers = os.listdir(folder)
-    next_number = max(numbers, default=0) + 1
+    next_number = max(int(number) for number in numbers) + 1
     os.mkdir(f"{folder}/{next_number}")
     return next_number
 
@@ -440,8 +426,6 @@ results = {
     "epochs":              epochs,
     "final_train_loss":    train_losses[-1],
     "train_losses":        train_losses,
-    "baseline_mse":        mse_base,
-    "baseline_rmse":       rmse_base,
     "lstm_mse":            mse,
     "lstm_rmse":           rmse,
 }
