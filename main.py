@@ -32,7 +32,12 @@ features_y = ['Temperature', 'Precipitation', 'Humidity', 'Wind_Speed_kmh',
             'Soil_Moisture', 'Soil_Temperature',
             'Wind_Dir_Sin', 'Wind_Dir_Cos']
 
-features_X = features_y
+features_extras_X = ['hour_sin','hour_cos','Temperature_lag_1h','Temperature_lag_3h',
+    'Temperature_lag_6h','Temperature_lag_12h','Temperature_lag_24h',
+    'Humidity_lag_1h','Humidity_lag_3h','Humidity_lag_6h','Humidity_lag_12h','Humidity_lag_24h',
+    'Wind_Speed_kmh_lag_1h','Wind_Speed_kmh_lag_3h','Wind_Speed_kmh_lag_6h','Wind_Speed_kmh_lag_12h','Wind_Speed_kmh_lag_24h',
+    'Soil_Moisture_lag_1h','Soil_Moisture_lag_3h','Soil_Moisture_lag_6h','Soil_Moisture_lag_12h','Soil_Moisture_lag_24h']
+features_X = features_y + features_extras_X
 X = df[features_X]
 y = df[features_y]
 # Separar treino e teste
@@ -74,7 +79,7 @@ def create_sequences(Xs, ys, window_size):
         y_seq.append(ys[i+window_size])
     return np.array(X_seq), np.array(y_seq)
 
-window_size = 12
+window_size = 42
 X_tr, y_tr = create_sequences(X_train_s, y_train_s, window_size)
 X_va, y_va = create_sequences(X_val_s,   y_val_s,   window_size)
 X_te, y_te = create_sequences(X_test_s,  y_test_s,  window_size)
@@ -84,11 +89,11 @@ X_te, y_te = create_sequences(X_test_s,  y_test_s,  window_size)
 input_size  = X_tr.shape[2]  # n_features
 output_size  = y_tr.shape[1]  # n_features
 hidden_size = 16
-num_layers  = 3
-lr          = 0.000997263984924767
-batch_size  = 16
-dropout     = 0.3651337599154908
-weight_decay = 0.0009721928170815226
+num_layers  = 4
+lr          = 0.0003105722147889412
+batch_size  = 32
+dropout     = 0.4882175615334471
+weight_decay = 7.354279782356269e-06
 epochs      = 100
 
 # %%

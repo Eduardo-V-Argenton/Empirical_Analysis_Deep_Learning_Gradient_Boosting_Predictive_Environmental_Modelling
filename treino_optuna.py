@@ -17,7 +17,12 @@ features_y = ['Temperature', 'Precipitation', 'Humidity', 'Wind_Speed_kmh',
             'Soil_Moisture', 'Soil_Temperature',
             'Wind_Dir_Sin', 'Wind_Dir_Cos']
 
-features_X = features_y
+features_extras_X = ['hour_sin','hour_cos','Temperature_lag_1h','Temperature_lag_3h',
+    'Temperature_lag_6h','Temperature_lag_12h','Temperature_lag_24h',
+    'Humidity_lag_1h','Humidity_lag_3h','Humidity_lag_6h','Humidity_lag_12h','Humidity_lag_24h',
+    'Wind_Speed_kmh_lag_1h','Wind_Speed_kmh_lag_3h','Wind_Speed_kmh_lag_6h','Wind_Speed_kmh_lag_12h','Wind_Speed_kmh_lag_24h',
+    'Soil_Moisture_lag_1h','Soil_Moisture_lag_3h','Soil_Moisture_lag_6h','Soil_Moisture_lag_12h','Soil_Moisture_lag_24h']
+features_X = features_y + features_extras_X
 X = df[features_X]
 y = df[features_y]
 # Separar treino e teste

@@ -108,7 +108,6 @@ plot = (
 
 plot.show()
 # %%
-df_clean.reset_index(inplace=True)
 df = df_clean
 
 # %%
@@ -121,4 +120,20 @@ df['Wind_Dir_Sin'] = np.sin(np.deg2rad(df['Wind_Direction']))
 df['Wind_Dir_Cos'] = np.cos(np.deg2rad(df['Wind_Direction']))
 
 # %%
+# seno cosseno horas
+hora_decimal = df.index.hour + df.index.minute / 60 + df.index.second / 3600
+df['hour_sin'] = np.sin(2 * np.pi * hora_decimal / 24)
+df['hour_cos'] = np.cos(2 * np.pi * hora_decimal / 24)
+
+# %%
+# Criar lags para algumas features importantes (ex: 1 hora atrás, 24 horas atrás)
+for col in ['Temperature', 'Humidity', 'Wind_Speed_kmh', 'Soil_Moisture']:
+    for lag in [1, 3, 6, 12, 24]: # Ajuste os lags conforme necessário
+        df[f'{col}_lag_{lag}h'] = df[col].shift(lag)
+
+df.dropna(inplace=True)
+print("\nDataFrame com features de lag (verifique os NaNs no início):")
+print(df[['Temperature', 'Temperature_lag_1h', 'Temperature_lag_24h']].head(26)) # Mostra mais linhas para ver valores não-NaN
+# %%
+df_clean.reset_index(inplace=True)
 df.to_csv('data/cleaned_data.csv', index=False)
