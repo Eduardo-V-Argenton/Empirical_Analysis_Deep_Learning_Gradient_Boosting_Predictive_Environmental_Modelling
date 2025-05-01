@@ -28,14 +28,16 @@ torch.manual_seed(42)
 torch.cuda.manual_seed(42)
 np.random.seed(42)
 # %%
-df = pd.read_csv('data/kelowna_weather_2024.csv')
+df = pd.read_csv('data/ground_station.csv')
 df.describe()
 
 # %%
-# df = pd.read_csv('kelowna_weather_2024.csv', parse_dates=['Timestamp'], index_col='Timestamp')
-df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+df['Timestamp'] = pd.to_datetime(df['Created_at'])
+df = df[df['Timestamp'] >= pd.to_datetime('2024-05-30')]
 df.set_index('Timestamp', inplace=True)
-df = df.resample('h').mean().interpolate(method='time', limit_direction='both')
+df = df.drop(columns=['Created_at'], axis=1)
+df = df.drop(columns=['Longitude'], axis=1)
+df = df.drop(columns=['Latitude'], axis=1)
 # %%
 df.describe()
 
@@ -130,12 +132,11 @@ df_clean.reset_index(inplace=True)
 df = df_clean
 
 # %%
-# profile = ProfileReport(df, title='Profile Report')
-# profile.to_file('profile_report.html')
+profile = ProfileReport(df, title='Profile Report')
+profile.to_file('profile_report.html')
 
 # %%
 # 1. Transformar o Timestamp em variáveis úteis
-df['hour'] = df['Timestamp'].dt.hour
 
 # 2. Transformar Wind_Direction (porque ângulo 0° e 360° são "iguais")
 df['Wind_Dir_Sin'] = np.sin(np.deg2rad(df['Wind_Direction']))
@@ -147,7 +148,7 @@ features_y = ['Temperature', 'Precipitation', 'Humidity', 'Wind_Speed_kmh',
             'Soil_Moisture', 'Soil_Temperature',
             'Wind_Dir_Sin', 'Wind_Dir_Cos']
 
-features_X = features_y + ['hour']
+features_X = features_y
 X = df[features_X]
 y = df[features_y]
 # Separar treino e teste
@@ -198,9 +199,9 @@ X_te, y_te = create_sequences(X_test_s,  y_test_s,  window_size)
 # Hiperparâmetros
 input_size  = X_tr.shape[2]  # n_features
 output_size  = y_tr.shape[1]  # n_features
-hidden_size = 32
+hidden_size = 64
 num_layers  = 1
-lr          = 1e-3
+lr          = 5e-4
 batch_size  = 32
 epochs      = 100
 
@@ -217,26 +218,32 @@ val_loader   = DataLoader(TensorDataset(torch.from_numpy(X_va).float(),
 class LSTM(nn.Module):
     def __init__(self, in_size, hid_size, num_layers, out_size):
         super().__init__()
-        self.lstm = nn.LSTM(in_size, hid_size, num_layers, batch_first=True,dropout=0.2)
-        self.fc   = nn.Linear(hid_size, out_size)
+        self.lstm = nn.LSTM(
+            in_size, hid_size, num_layers,
+            batch_first=True, dropout=0.3, bidirectional=True
+        )
+        self.fc = nn.Linear(hid_size * 2, out_size)  # *2 por ser bidirecional
+
     def forward(self, x):
-        _, (h_n, _) = self.lstm(x)           # h_n: (num_layers, B, hid_size)
-        h_last = h_n[-1]                     # pega a saída da última camada
-        return self.fc(h_last)              # (B, out_size)
+        _, (h_n, _) = self.lstm(x)  # h_n: (num_layers * 2, B, hid_size)
+        # Pega a última camada de cada direção
+        fwd = h_n[-2]  # direção para frente
+        bwd = h_n[-1]  # direção para trás
+        h_cat = torch.cat((fwd, bwd), dim=1)  # (B, hid_size * 2)
+        return self.fc(h_cat)  # (B, out_size)
 
 # %%
 model = LSTM(input_size, hidden_size, num_layers, output_size)
 model.to(device)
 criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer,
     mode='min',
     factor=0.5,
-    patience=10,
+    patience=5,
     min_lr=1e-6,
 )
-# %%
 
 # %%
 # Loop de treino
@@ -317,7 +324,7 @@ nrmse = rmse / std
 r2    = [r2_score(y_true[:,i], y_pred[:,i])
         for i in range(len(features_y))]
 
-df = pd.DataFrame({
+metrics_per_feat = pd.DataFrame({
     'feature': features_y,
     'std':     std,
     'MSE':     mse,
@@ -325,7 +332,7 @@ df = pd.DataFrame({
     'NRMSE':   nrmse,
     'R2':      r2
 })
-print(df)
+print(metrics_per_feat)
 
 # %%
 mse = mean_squared_error(y_pred, y_true)
