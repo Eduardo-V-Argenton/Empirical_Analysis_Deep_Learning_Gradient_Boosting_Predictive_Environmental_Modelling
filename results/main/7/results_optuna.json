@@ -1,0 +1,13 @@
+{
+    "window_size": 12,
+    "hidden_size": 256,
+    "num_layers": 1,
+    "learning_rate": 0.0008348642167012425,
+    "batch_size": 32,
+    "dropout": 0.2695057040292974,
+    "weight_decay": 1.4049992904458494e-06,
+    "bidirectional": false,
+    "loss": "mse",
+    "optimizer": "RMSprop",
+    "scaler": "MinMaxScaler"
+}
