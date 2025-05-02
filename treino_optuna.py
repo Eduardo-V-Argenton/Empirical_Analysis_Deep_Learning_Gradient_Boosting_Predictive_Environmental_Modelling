@@ -3,59 +3,17 @@ import optuna
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 import numpy as np
 import pandas as pd
 import plotly
+import json
 
 # %%
 df = pd.read_csv('data/cleaned_data.csv')
 
 # %%
-# Features que serão usadas
-features_y = ['Temperature', 'Precipitation', 'Humidity', 'Wind_Speed_kmh',
-            'Soil_Moisture', 'Soil_Temperature',
-            'Wind_Dir_Sin', 'Wind_Dir_Cos']
-
-features_extras_X = ['hour_sin','hour_cos','Temperature_lag_1h','Temperature_lag_3h',
-    'Temperature_lag_6h','Temperature_lag_12h','Temperature_lag_24h',
-    'Humidity_lag_1h','Humidity_lag_3h','Humidity_lag_6h','Humidity_lag_12h','Humidity_lag_24h',
-    'Wind_Speed_kmh_lag_1h','Wind_Speed_kmh_lag_3h','Wind_Speed_kmh_lag_6h','Wind_Speed_kmh_lag_12h','Wind_Speed_kmh_lag_24h',
-    'Soil_Moisture_lag_1h','Soil_Moisture_lag_3h','Soil_Moisture_lag_6h','Soil_Moisture_lag_12h','Soil_Moisture_lag_24h']
-features_X = features_y + features_extras_X
-X = df[features_X]
-y = df[features_y]
-# Separar treino e teste
-n = len(X)
-n_trainval = int(0.8 * n)
-n_test     = n - n_trainval
-n_train    = int(0.8 * n_trainval)
-n_val      = n_trainval - n_train
-
-X_train, X_val, X_test = (
-    X[:n_train],
-    X[n_train:n_train + n_val],
-    X[n_trainval:]
-)
-y_train, y_val, y_test = (
-    y[:n_train],
-    y[n_train:n_train + n_val],
-    y[n_trainval:]
-)
-
-# 4) Escalonamento (fit apenas em treino)
-X_scaler = MinMaxScaler((0,1)); X_scaler.fit(X_train)
-y_scaler = MinMaxScaler((0,1)); y_scaler.fit(y_train)
-
-X_train_s = X_scaler.transform(X_train)
-X_val_s   = X_scaler.transform(X_val)
-X_test_s  = X_scaler.transform(X_test)
-
-y_train_s = y_scaler.transform(y_train)
-y_val_s   = y_scaler.transform(y_val)
-y_test_s  = y_scaler.transform(y_test)
-
-# AGORA, vamos construir X e y para LSTM (com janela de tempo)
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def create_sequences(Xs, ys, window_size):
     X_seq, y_seq = [], []
@@ -63,9 +21,6 @@ def create_sequences(Xs, ys, window_size):
         X_seq.append(Xs[i:i+window_size])
         y_seq.append(ys[i+window_size])
     return np.array(X_seq), np.array(y_seq)
-# Variáveis globais ou passadas como argumento para objective se necessário
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-# ... (outras variáveis fixas)
 
 # %%
 def objective(trial):
@@ -79,8 +34,59 @@ def objective(trial):
     dropout_rate = trial.suggest_float('dropout', 0.1, 0.5) # Taxa de dropout a ser usada
     weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
     bidirectional_lstm = trial.suggest_categorical('bidirectional', [True, False])
+    loss_name = trial.suggest_categorical('loss', ['mse', 'mae', 'hubber'])
+    optimizer_name = trial.suggest_categorical('optimizer', ['Adam', 'SGD', 'RMSprop'])
+    scaler_name = trial.suggest_categorical('scaler', ['StandardScaler', 'MinMaxScaler', 'RobustScaler'])
 
-    # --- 1.1 (Opcional): Criar sequências se window_size for tunado ---
+    features_y = ['Temperature', 'Precipitation', 'Humidity', 'Wind_Speed_kmh',
+                'Soil_Moisture', 'Soil_Temperature',
+                'Wind_Dir_Sin', 'Wind_Dir_Cos']
+
+    features_X = df.columns.drop(['Timestamp', 'Wind_Direction'])
+    X = df[features_X]
+    y = df[features_y]
+    # Separar treino e teste
+    n = len(X)
+    n_trainval = int(0.8 * n)
+    n_test     = n - n_trainval
+    n_train    = int(0.8 * n_trainval)
+    n_val      = n_trainval - n_train
+
+    X_train, X_val, X_test = (
+        X[:n_train],
+        X[n_train:n_train + n_val],
+        X[n_trainval:]
+    )
+    y_train, y_val, y_test = (
+        y[:n_train],
+        y[n_train:n_train + n_val],
+        y[n_trainval:]
+    )
+
+    # 4) Escalonamento (fit apenas em treino)
+    if scaler_name == 'StandardScaler':
+        X_scaler = StandardScaler();
+        y_scaler = StandardScaler();
+
+    elif scaler_name == 'MinMaxScaler':
+        X_scaler = MinMaxScaler();
+        y_scaler = MinMaxScaler();
+
+    else:
+        X_scaler = RobustScaler();
+        y_scaler = RobustScaler();
+
+    X_scaler.fit(X_train)
+    y_scaler.fit(y_train)
+
+    X_train_s = X_scaler.transform(X_train)
+    X_val_s   = X_scaler.transform(X_val)
+    X_test_s  = X_scaler.transform(X_test)
+
+    y_train_s = y_scaler.transform(y_train)
+    y_val_s   = y_scaler.transform(y_val)
+    y_test_s  = y_scaler.transform(y_test)
+
     # Recalcular X_tr, y_tr, X_va, y_va com o window_size sugerido
     # Lembre-se que X_train_s, y_train_s, etc. foram calculados fora
     X_tr, y_tr = create_sequences(X_train_s, y_train_s, window_size)
@@ -111,7 +117,6 @@ def objective(trial):
                 bidirectional=bidirectional
             )
             # Adicionar dropout após LSTM pode ser útil
-            self.dropout_layer = nn.Dropout(dropout_p)
             self.fc = nn.Linear(hid_size * self.num_directions, out_size)
 
          def forward(self, x):
@@ -128,15 +133,23 @@ def objective(trial):
                  h_cat = h_n[-1]
 
              # Aplicar dropout antes da camada linear
-             h_cat = self.dropout_layer(h_cat)
              return self.fc(h_cat)
 
 
     model = LSTM(input_size, hidden_size, num_layers, output_size, dropout_rate, bidirectional_lstm).to(device)
-    criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
-    # Scheduler pode ser incluído, mas pode complicar um pouco a otimização inicial
-    # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(...)
+    if loss_name == 'mse':
+        criterion = nn.MSELoss()
+    if loss_name == 'mae':
+        criterion = nn.L1Loss()
+    else:
+        criterion = nn.HuberLoss()
+
+    if optimizer_name == 'Adam':
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    if optimizer_name == 'SGD':
+        optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    else:
+        optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # --- 3. Loop de Treino e Validação ---
     epochs = 50 # Use um número menor de épocas para cada trial, ou use early stopping
@@ -144,7 +157,20 @@ def objective(trial):
 
     for epoch in range(1, epochs + 1):
         model.train()
-        # ... (seu loop de treino para uma época) ...
+        total_loss = 0
+        for xb, yb in train_loader:
+            optimizer.zero_grad()
+            pred = model(xb.to(device))            # (B, n_features)
+            loss = criterion(pred, yb.to(device))
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item() * xb.size(0)
+
+        avg_loss = total_loss / len(train_loader.dataset)
+
+        # --- Logging ---
+        if epoch % 10 == 0 or epoch == 1:
+            print(f"Epoch {epoch:03d} | train_loss: {avg_loss:.5f}") # Adicionado LR
 
         # --- Validação ---
         model.eval()
@@ -166,8 +192,6 @@ def objective(trial):
         if trial.should_prune():
             raise optuna.exceptions.TrialPruned()
 
-        # Aqui você pode adicionar sua lógica de early stopping interno do trial também
-        # ou confiar no pruning do Optuna e no número fixo de épocas
 
     # --- 4. Retornar a Métrica a ser Otimizada ---
     # Queremos minimizar a melhor perda de validação encontrada neste trial
@@ -193,3 +217,6 @@ fig = optuna.visualization.plot_optimization_history(study)
 fig.write_image('optimization_history.png')
 fig = optuna.visualization.plot_param_importances(study)
 fig.write_image('param_importances.png')
+
+with open('results_optuna.json', "w") as f:
+    json.dump(trial.params, f, indent=4)
