@@ -1,5 +1,4 @@
 # %%
-from io import BufferedWriter
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -12,6 +11,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 import os
 import json
 from sklearn.model_selection import TimeSeriesSplit
+from joblib import dump
 
 # %%
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -321,3 +321,9 @@ print("📊 Todos os resultados foram gravados em results.json")
 # %%
 filename = f"results/main/{next_number}/model.h5"
 torch.save(best_model_state_dict, filename)
+
+# %%
+X_scaler_final = MinMaxScaler().fit(X)
+y_scaler_final = MinMaxScaler().fit(y)
+dump(X_scaler_final, f"results/main/{next_number}/x_scaler.pkl")
+dump(y_scaler_final, f"results/main/{next_number}/y_scaler.pkl")
