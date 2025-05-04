@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import plotly
 import json
+from basic import Model, features_y, features_X
 
 # %%
 df = pd.read_csv('data/cleaned_data.csv')
@@ -38,11 +39,6 @@ def objective(trial):
     optimizer_name = trial.suggest_categorical('optimizer', ['Adam', 'SGD', 'RMSprop'])
     scaler_name = trial.suggest_categorical('scaler', ['StandardScaler', 'MinMaxScaler', 'RobustScaler'])
 
-    features_y = ['Temperature', 'Precipitation_log', 'Humidity', 'Wind_Speed_kmh',
-                'Soil_Moisture', 'Soil_Temperature',
-                'Wind_Dir_Sin', 'Wind_Dir_Cos']
-
-    features_X = df.columns.drop(['Timestamp', 'Wind_Direction', 'Precipitation'])
     X = df[features_X]
     y = df[features_y]
     # Separar treino e teste
@@ -105,42 +101,7 @@ def objective(trial):
     input_size = X_tr.shape[2]
     output_size = y_tr.shape[1]
 
-    class GRU(nn.Module):
-        def __init__(self, in_size, hid_size, n_layers, out_size, dropout_p, bidirectional):
-            super().__init__()
-            self.num_directions = 2 if bidirectional else 1
-            self.gru = nn.GRU(
-                in_size,
-                hid_size,
-                n_layers,
-                batch_first=True,
-                dropout=dropout_p if n_layers > 1 else 0,  # Dropout só entre camadas se n_layers > 1
-                bidirectional=bidirectional
-            )
-            # Camada final
-            self.fc = nn.Linear(hid_size * self.num_directions, out_size)
-            # Dropout externo (opcional)
-            self.dropout = nn.Dropout(dropout_p)
-
-        def forward(self, x):
-            # x: (B, T, in_size)
-            gru_out, h_n = self.gru(x)
-            # h_n: (num_layers * num_directions, B, hid_size)
-            if self.num_directions == 2:
-                # Última camada forward + backward
-                fwd = h_n[-2]  # última camada, direção forward
-                bwd = h_n[-1]  # última camada, direção backward
-                h_cat = torch.cat((fwd, bwd), dim=1)
-            else:
-                # Só pegar o último hidden state da última camada
-                h_cat = h_n[-1]
-
-            # Dropout antes da FC (se desejado)
-            h_cat = self.dropout(h_cat)
-            return self.fc(h_cat)
-
-
-    model = GRU(input_size, hidden_size, num_layers, output_size, dropout_rate, bidirectional_lstm).to(device)
+    model = Model(input_size, hidden_size, num_layers, output_size, dropout_rate, bidirectional_lstm).to(device)
     if loss_name == 'mse':
         criterion = nn.MSELoss()
     if loss_name == 'mae':
