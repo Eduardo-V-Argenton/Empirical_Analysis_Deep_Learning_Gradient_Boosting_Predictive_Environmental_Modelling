@@ -43,7 +43,7 @@ features_y = [
 ]
 
 features_X = [
-    'Temperature', 'Humidity',
-    'Wind_Speed_kmh',  'Soil_Moisture', 'Soil_Temperature', 'Wind_Dir_Sin',
-    'Wind_Dir_Cos', 'hour_sin', 'hour_cos', 'Precipitation_log'
+    'Temperature', 'Humidity', 'Wind_Speed_kmh', 'Soil_Moisture', 'Soil_Temperature',
+    'Wind_Dir_Sin', 'Wind_Dir_Cos', 'Precipitation_log', 'hour_sin1', 'hour_cos1',
+    'hour_sin2', 'hour_cos2', 'hour_sin3', 'hour_cos3', 'doy_sin', 'doy_cos'
 ]

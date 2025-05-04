@@ -43,23 +43,23 @@ def create_sequences(Xs, ys, window_size):
     return np.array(X_seq), np.array(y_seq)
 
 # %%
-all_metrics = []
-all_avg_losses = []
-all_df_plots = []
+best_metrics = None
+best_losses = None
+best_df_plots = None
 best_model_state_dict = None
 best_nrmse = float('inf')
 
 # Hiperparâmetros
 input_size  = 0
 output_size  = 0
-hidden_size = 128
-num_layers  = 4
-lr          = 0.00017085561327576825
-batch_size  = 8
+hidden_size = 256
+num_layers  = 2
+lr          = 0.00016924186859449544
+batch_size  = 64
 dropout     = 0.4
-weight_decay = 2.1768208421129883e-06
+weight_decay = 4.30016859911945e-06
 epochs      = 100
-window_size = 6
+window_size = 48
 bidirectional = True
 
 # %%
@@ -113,6 +113,7 @@ for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
     val_losses = []
     y_pred = []
     y_true = []
+    avg_losses = []
     best_avg_val_loss = float('inf')
     epochs_since_best = 0
     for epoch in range(1, epochs+1):
@@ -127,7 +128,7 @@ for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
             total_loss += loss.item() * xb.size(0)
 
         avg_loss = total_loss / len(train_loader.dataset)
-        all_avg_losses.append(avg_loss)
+        avg_losses.append(avg_loss)
 
         # --- Validação ---
         model.eval()
@@ -192,12 +193,8 @@ for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
         'R2':      r2
     })
 
-    summed_nrmse =  sum(metrics_per_feat['NRMSE'].values)
-    if best_nrmse > summed_nrmse:
-        best_nrmse = summed_nrmse
-        best_model_state_dict = model.state_dict()
+
     print(metrics_per_feat)
-    all_metrics.append(metrics_per_feat)
 
     train_val_split = int(0.8 * len(df))     # ponto onde começa o teste no df original
     start = train_val_split + window_size
@@ -227,37 +224,26 @@ for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
             var_name='feature', value_name='value')
     )
 
-    all_df_plots.append(df_plot)
 
+    summed_nrmse =  sum(metrics_per_feat['NRMSE'].values)
+    if best_nrmse > summed_nrmse:
+        best_nrmse = summed_nrmse
+        best_metrics = metrics_per_feat
+        best_model_state_dict = model.state_dict()
+        best_df_plots = df_plot
+        best_losses = avg_losses
 
-# %%
-df_all = pd.concat(all_metrics, ignore_index=True)
 
 # 2) Média por feature
-overall_per_feature = df_all.groupby('feature').mean()
-
 print("Métricas médias por feature:")
-print(overall_per_feature)
-
-# 3) Se quiser também a média global (todas as features juntas)
-overall_global = df_all.drop(columns='feature').mean().to_frame().T
-overall_global.index = ['overall']
-
-print("\nMétrica global (todas as features):")
-print(overall_global)
+print(best_metrics)
 
 # %%
-df_plot = pd.concat(all_df_plots, ignore_index=True)
+df_plot = best_df_plots
 
 # Agora calcula a média agrupando por 'index', 'type' e 'feature'
-df_plot_mean = (
-    df_plot
-    .groupby(['index', 'type', 'feature'], as_index=False)
-    .mean()
-)
-# Junta todos os DataFrames em um só
 plot = (
-    ggplot(df_plot_mean, aes(x='index', y='value', color='type'))
+    ggplot(df_plot, aes(x='index', y='value', color='type'))
     + geom_line()
     + facet_wrap('~feature', scales='free_y', ncol=1)
     + labs(
@@ -295,9 +281,8 @@ results = {
     "learning_rate":       lr,
     "batch_size":          batch_size,
     "epochs":              epochs,
-    "metrics_per_feature": overall_per_feature.to_dict(orient='records'),
-    "metrics_total":       overall_global.to_dict(orient='records'),
-    "train_losses":        all_avg_losses,
+    "metrics_per_feature": best_metrics.to_dict(orient='records'),
+    "train_losses":        best_losses,
 }
 
 filename = f"results/main/{next_number}/result.json"

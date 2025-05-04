@@ -112,22 +112,33 @@ plot.show()
 # %%
 df = df_clean
 
-# %%
-profile = ProfileReport(df, title='Profile Report')
-profile.to_file('profile_report.html')
 
 # %%
 #Transformar Wind_Direction (porque ângulo 0° e 360° são "iguais")
 df['Wind_Dir_Sin'] = np.sin(np.deg2rad(df['Wind_Direction']))
 df['Wind_Dir_Cos'] = np.cos(np.deg2rad(df['Wind_Direction']))
-
-# %%
-# seno cosseno horas
-hora_decimal = df.index.hour + df.index.minute / 60 + df.index.second / 3600
-df['hour_sin'] = np.sin(2 * np.pi * hora_decimal / 24)
-df['hour_cos'] = np.cos(2 * np.pi * hora_decimal / 24)
 df['Precipitation_log'] = np.log1p(df['Precipitation'])
 
+df.drop(columns=['Wind_Direction'], inplace=True)
+df.drop(columns=['Precipitation'], inplace=True)
 # %%
-df_clean.reset_index(inplace=True)
+profile = ProfileReport(df, title='Profile Report')
+profile.to_file('profile_report.html')
+
+# %%
+df.reset_index(inplace=True)
+day_secs = 24 * 3600
+secs = df['Timestamp'].dt.hour * 3600 + df['Timestamp'].dt.minute * 60 + df['Timestamp'].dt.second
+
+for k in [1, 2, 3]:
+    df[f'hour_sin{k}'] = np.sin(2 * np.pi * k * secs / day_secs)
+    df[f'hour_cos{k}'] = np.cos(2 * np.pi * k * secs / day_secs)
+
+doy = df['Timestamp'].dt.dayofyear
+df['doy_sin'] = np.sin(2 * np.pi * doy / 365)
+df['doy_cos'] = np.cos(2 * np.pi * doy / 365)
+
+df.drop(columns=['Timestamp'], inplace=True)
+
+# %%
 df.to_csv('data/cleaned_data.csv', index=False)
