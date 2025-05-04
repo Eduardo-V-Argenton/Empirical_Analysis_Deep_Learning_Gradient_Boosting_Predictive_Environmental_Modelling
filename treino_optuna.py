@@ -31,18 +31,18 @@ def objective(trial):
     num_layers = trial.suggest_int('num_layers', 1, 4)
     learning_rate = trial.suggest_float('learning_rate', 1e-5, 1e-3, log=True)
     batch_size = trial.suggest_categorical('batch_size', [8, 16, 32, 64])
-    dropout_rate = trial.suggest_float('dropout', 0.1, 0.5) # Taxa de dropout a ser usada
+    dropout_rate = trial.suggest_float('dropout', 0.1, 0.5, step=0.1) # Taxa de dropout a ser usada
     weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
     bidirectional_lstm = trial.suggest_categorical('bidirectional', [True, False])
     loss_name = trial.suggest_categorical('loss', ['mse', 'mae', 'hubber'])
     optimizer_name = trial.suggest_categorical('optimizer', ['Adam', 'SGD', 'RMSprop'])
     scaler_name = trial.suggest_categorical('scaler', ['StandardScaler', 'MinMaxScaler', 'RobustScaler'])
 
-    features_y = ['Temperature', 'Precipitation', 'Humidity', 'Wind_Speed_kmh',
+    features_y = ['Temperature', 'Precipitation_log', 'Humidity', 'Wind_Speed_kmh',
                 'Soil_Moisture', 'Soil_Temperature',
                 'Wind_Dir_Sin', 'Wind_Dir_Cos']
 
-    features_X = df.columns.drop(['Timestamp', 'Wind_Direction'])
+    features_X = df.columns.drop(['Timestamp', 'Wind_Direction', 'Precipitation'])
     X = df[features_X]
     y = df[features_y]
     # Separar treino e teste
@@ -105,38 +105,42 @@ def objective(trial):
     input_size = X_tr.shape[2]
     output_size = y_tr.shape[1]
 
-    # Defina a classe LSTM aqui ou importe-a
-    class LSTM(nn.Module):
-         def __init__(self, in_size, hid_size, n_layers, out_size, dropout_p, bidirectional):
+    class GRU(nn.Module):
+        def __init__(self, in_size, hid_size, n_layers, out_size, dropout_p, bidirectional):
             super().__init__()
             self.num_directions = 2 if bidirectional else 1
-            self.lstm = nn.LSTM(
-                in_size, hid_size, n_layers,
+            self.gru = nn.GRU(
+                in_size,
+                hid_size,
+                n_layers,
                 batch_first=True,
-                dropout=dropout_p if n_layers > 1 else 0, # Dropout só entre camadas LSTM > 1
+                dropout=dropout_p if n_layers > 1 else 0,  # Dropout só entre camadas se n_layers > 1
                 bidirectional=bidirectional
             )
-            # Adicionar dropout após LSTM pode ser útil
+            # Camada final
             self.fc = nn.Linear(hid_size * self.num_directions, out_size)
+            # Dropout externo (opcional)
+            self.dropout = nn.Dropout(dropout_p)
 
-         def forward(self, x):
-             lstm_out, (h_n, _) = self.lstm(x)
-             # Se bidirecional, h_n tem shape (num_layers * 2, B, hid_size)
-             # Pegar a última camada de cada direção ou a última saída
-             if self.num_directions == 2:
-                 # Concatenar último hidden state das duas direções da última camada
-                 fwd = h_n[-2] # Última camada, forward
-                 bwd = h_n[-1] # Última camada, backward
-                 h_cat = torch.cat((fwd, bwd), dim=1)
-             else:
-                 # Pegar último hidden state da última camada (unidirecional)
-                 h_cat = h_n[-1]
+        def forward(self, x):
+            # x: (B, T, in_size)
+            gru_out, h_n = self.gru(x)
+            # h_n: (num_layers * num_directions, B, hid_size)
+            if self.num_directions == 2:
+                # Última camada forward + backward
+                fwd = h_n[-2]  # última camada, direção forward
+                bwd = h_n[-1]  # última camada, direção backward
+                h_cat = torch.cat((fwd, bwd), dim=1)
+            else:
+                # Só pegar o último hidden state da última camada
+                h_cat = h_n[-1]
 
-             # Aplicar dropout antes da camada linear
-             return self.fc(h_cat)
+            # Dropout antes da FC (se desejado)
+            h_cat = self.dropout(h_cat)
+            return self.fc(h_cat)
 
 
-    model = LSTM(input_size, hidden_size, num_layers, output_size, dropout_rate, bidirectional_lstm).to(device)
+    model = GRU(input_size, hidden_size, num_layers, output_size, dropout_rate, bidirectional_lstm).to(device)
     if loss_name == 'mse':
         criterion = nn.MSELoss()
     if loss_name == 'mae':

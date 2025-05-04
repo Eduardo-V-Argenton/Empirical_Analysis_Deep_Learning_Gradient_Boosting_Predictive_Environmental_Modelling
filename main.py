@@ -30,11 +30,11 @@ df.head()
 
 # %%
 # Features que serão usadas
-features_y = ['Temperature', 'Precipitation', 'Humidity', 'Wind_Speed_kmh',
+features_y = ['Temperature', 'Precipitation_log', 'Humidity', 'Wind_Speed_kmh',
             'Soil_Moisture', 'Soil_Temperature',
             'Wind_Dir_Sin', 'Wind_Dir_Cos']
 
-features_X = df.columns.drop(['Timestamp', 'Wind_Direction'])
+features_X = df.columns.drop(['Timestamp', 'Wind_Direction', 'Precipitation'])
 X = df[features_X]
 y = df[features_y]
 # %%
@@ -45,24 +45,26 @@ def create_sequences(Xs, ys, window_size):
         X_seq.append(Xs[i:i+window_size])
         y_seq.append(ys[i+window_size])
     return np.array(X_seq), np.array(y_seq)
-window_size = 12
 
 # %%
 all_metrics = []
 all_avg_losses = []
 all_df_plots = []
 best_model_state_dict = None
+best_nrmse = float('inf')
 
 # Hiperparâmetros
 input_size  = 0
 output_size  = 0
-hidden_size = 256
-num_layers  = 1
-lr          = 0.0008348642167012425
-batch_size  = 32
-dropout     = 0.2695057040292974
-weight_decay = 1.4049992904458494e-06
+hidden_size = 128
+num_layers  = 4
+lr          = 0.00017085561327576825
+batch_size  = 8
+dropout     = 0.4
+weight_decay = 2.1768208421129883e-06
 epochs      = 100
+window_size = 6
+bidirectional = True
 
 # %%
 tscv = TimeSeriesSplit(n_splits=5)
@@ -98,23 +100,42 @@ for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
                             batch_size, shuffle=False)
 
     # Modelo
-    class LSTM(nn.Module):
-        def __init__(self, in_size, hid_size, num_layers, out_size, dropout):
+    class GRU(nn.Module):
+        def __init__(self, in_size, hid_size, n_layers, out_size, dropout_p, bidirectional):
             super().__init__()
-            self.lstm = nn.LSTM(
-                in_size, hid_size, num_layers,
-                batch_first=True, dropout=dropout, bidirectional=False
+            self.num_directions = 2 if bidirectional else 1
+            self.gru = nn.GRU(
+                in_size,
+                hid_size,
+                n_layers,
+                batch_first=True,
+                dropout=dropout_p if n_layers > 1 else 0,  # Dropout só entre camadas se n_layers > 1
+                bidirectional=bidirectional
             )
-            self.fc = nn.Linear(hid_size, out_size)
+            # Camada final
+            self.fc = nn.Linear(hid_size * self.num_directions, out_size)
+            # Dropout externo (opcional)
+            self.dropout = nn.Dropout(dropout_p)
 
         def forward(self, x):
-            _, (h_n, _) = self.lstm(x)           # h_n: (num_layers, B, hid_size)
-            h_last = h_n[-1]                     # pega a saída da última camada
-            return self.fc(h_last)              # (B, out_size)
+            # x: (B, T, in_size)
+            gru_out, h_n = self.gru(x)
+            # h_n: (num_layers * num_directions, B, hid_size)
+            if self.num_directions == 2:
+                # Última camada forward + backward
+                fwd = h_n[-2]  # última camada, direção forward
+                bwd = h_n[-1]  # última camada, direção backward
+                h_cat = torch.cat((fwd, bwd), dim=1)
+            else:
+                # Só pegar o último hidden state da última camada
+                h_cat = h_n[-1]
 
-    model = LSTM(input_size, hidden_size, num_layers, output_size, dropout)
-    model.to(device)
-    criterion = nn.MSELoss()
+            # Dropout antes da FC (se desejado)
+            h_cat = self.dropout(h_cat)
+            return self.fc(h_cat)
+
+    model = GRU(input_size, hidden_size, num_layers, output_size, dropout, bidirectional).to(device)
+    criterion = nn.HuberLoss()
     optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
@@ -162,7 +183,6 @@ for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
         if avg_val < best_avg_val_loss:
             best_avg_val_loss = avg_val
             epochs_since_best = 0
-            best_model_state_dict = model.state_dict()
         else:
             epochs_since_best += 1
             # Early stopping on-demand (baseado na validação)
@@ -208,6 +228,11 @@ for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
         'NRMSE':   nrmse,
         'R2':      r2
     })
+
+    summed_nrmse =  sum(metrics_per_feat['NRMSE'].values)
+    if best_nrmse > summed_nrmse:
+        best_nrmse = summed_nrmse
+        best_model_state_dict = model.state_dict()
     print(metrics_per_feat)
     all_metrics.append(metrics_per_feat)
 

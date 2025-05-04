@@ -18,6 +18,8 @@ df.set_index('Timestamp', inplace=True)
 df = df.drop(columns=['Created_at'], axis=1)
 df = df.drop(columns=['Longitude'], axis=1)
 df = df.drop(columns=['Latitude'], axis=1)
+df = df.resample('30min').mean()
+df = df.interpolate(method='time')
 # %%
 df.describe()
 
@@ -124,6 +126,7 @@ df['Wind_Dir_Cos'] = np.cos(np.deg2rad(df['Wind_Direction']))
 hora_decimal = df.index.hour + df.index.minute / 60 + df.index.second / 3600
 df['hour_sin'] = np.sin(2 * np.pi * hora_decimal / 24)
 df['hour_cos'] = np.cos(2 * np.pi * hora_decimal / 24)
+df['Precipitation_log'] = np.log1p(df['Precipitation'])
 
 # %%
 df_clean.reset_index(inplace=True)

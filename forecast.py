@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
@@ -7,30 +8,51 @@ from datetime import datetime, timedelta
 from plotnine import ggplot, aes, geom_line, labs, theme_bw, scale_x_datetime, facet_wrap
 
 # Configuração inicial
-MODEL_PATH = 'results/main/7/model.h5'  # Substitua pelo seu caminho
-X_SCALER_PATH = 'results/main/7/x_scaler.pkl'  # Substitua
-Y_SCALER_PATH = 'results/main/7/y_scaler.pkl'  # Substitua
+MODEL_PATH = 'results/main/8/model.h5'  # Substitua pelo seu caminho
+X_SCALER_PATH = 'results/main/8/x_scaler.pkl'  # Substitua
+Y_SCALER_PATH = 'results/main/8/y_scaler.pkl'  # Substitua
 DATA_PATH = 'data/cleaned_data.csv'
-WINDOW_SIZE = 12
-FEATURES_Y = ['Temperature', 'Precipitation', 'Humidity', 'Wind_Speed_kmh',
+WINDOW_SIZE = 6
+FEATURES_Y = ['Temperature', 'Precipitation_log', 'Humidity', 'Wind_Speed_kmh',
               'Soil_Moisture', 'Soil_Temperature', 'Wind_Dir_Sin', 'Wind_Dir_Cos']
 
 # 1. Carregar recursos necessários
-class LSTM(torch.nn.Module):
-    def __init__(self, in_size=10, hid_size=256, num_layers=1, out_size=8, dropout=0.27):
+class GRU(nn.Module):
+    def __init__(self, in_size, hid_size, n_layers, out_size, dropout_p, bidirectional):
         super().__init__()
-        self.lstm = torch.nn.LSTM(
-            in_size, hid_size, num_layers,
-            batch_first=True, dropout=dropout
+        self.num_directions = 2 if bidirectional else 1
+        self.gru = nn.GRU(
+            in_size,
+            hid_size,
+            n_layers,
+            batch_first=True,
+            dropout=dropout_p if n_layers > 1 else 0,  # Dropout só entre camadas se n_layers > 1
+            bidirectional=bidirectional
         )
-        self.fc = torch.nn.Linear(hid_size, out_size)
+        # Camada final
+        self.fc = nn.Linear(hid_size * self.num_directions, out_size)
+        # Dropout externo (opcional)
+        self.dropout = nn.Dropout(dropout_p)
 
     def forward(self, x):
-        _, (h_n, _) = self.lstm(x)
-        return self.fc(h_n[-1])
+        # x: (B, T, in_size)
+        gru_out, h_n = self.gru(x)
+        # h_n: (num_layers * num_directions, B, hid_size)
+        if self.num_directions == 2:
+            # Última camada forward + backward
+            fwd = h_n[-2]  # última camada, direção forward
+            bwd = h_n[-1]  # última camada, direção backward
+            h_cat = torch.cat((fwd, bwd), dim=1)
+        else:
+            # Só pegar o último hidden state da última camada
+            h_cat = h_n[-1]
+
+        # Dropout antes da FC (se desejado)
+        h_cat = self.dropout(h_cat)
+        return self.fc(h_cat)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = LSTM().to(device)
+model = GRU(10, 128, 4, 8, 0.4, True).to(device)
 model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model.eval()
 
@@ -42,52 +64,60 @@ df = pd.read_csv(DATA_PATH)
 df['Timestamp'] = pd.to_datetime(df['Timestamp'])
 
 # Pegar última janela de dados
-raw_window = df.drop(columns=['Timestamp', 'Wind_Direction']).iloc[-WINDOW_SIZE:]
-window_normalized = x_scaler.transform(raw_window)
 
-# 3. Função auxiliar para gerar features temporais
-def generate_time_features(timestamp):
-    return {
-        'Hour': timestamp.hour,
-        'Day': timestamp.day,
-        'Month': timestamp.month
-    }
+features_X = df.columns.drop(['Timestamp', 'Wind_Direction', 'Precipitation'])
+raw_window = df.drop(columns=['Timestamp', 'Wind_Direction', 'Precipitation']).iloc[-WINDOW_SIZE:]
+from datetime import timedelta
 
-# 4. Fazer previsões
-current_input = torch.tensor(window_normalized).float().unsqueeze(0).to(device)
+# pega a última janela já normalizada
+window_norm = x_scaler.transform(raw_window)  # shape (6, n_features)
+current = torch.tensor(window_norm).float().unsqueeze(0).to(device)
+
 predictions = []
-last_timestamp = df['Timestamp'].iloc[-1]
+last_ts = df['Timestamp'].iloc[-1]
 
-for _ in range(240):
+def hour_sin_cos(ts):
+    rad = 2 * np.pi * ts.hour / 24
+    return np.sin(rad), np.cos(rad)
+
+steps = 48
+for _ in range(steps):
     with torch.no_grad():
-        pred_normalized = model(current_input).cpu().numpy()
+        pred_norm = model(current).cpu().numpy()  # (1, n_targets)
+    pred = y_scaler.inverse_transform(pred_norm)[0]
 
-    # Desnormalizar apenas as features Y
-    pred = y_scaler.inverse_transform(pred_normalized)[0]
+    # cria novo timestamp e features temporais
+    new_ts = last_ts + timedelta(hours=1)
+    hs, hc   = hour_sin_cos(new_ts)
+    doy_rad  = 2*np.pi * new_ts.timetuple().tm_yday / 365
+    dys, dyc = np.sin(doy_rad), np.cos(doy_rad)
 
-    # Criar novo timestamp
-    new_timestamp = last_timestamp + timedelta(hours=1)
-
-    # Gerar novas features exógenas
-    time_features = generate_time_features(new_timestamp)
-
-    # Criar nova linha de dados
-    new_row = {}
-    for col in raw_window.columns:
+    # monta a linha completa na ordem features_X
+    row = {}
+    for col in features_X:
         if col in FEATURES_Y:
-            new_row[col] = pred[FEATURES_Y.index(col)]
+            row[col] = pred[FEATURES_Y.index(col)]
+        elif col == 'hour_sin':
+            row[col] = hs
+        elif col == 'hour_cos':
+            row[col] = hc
+        elif col == 'dayofyear_sin':
+            row[col] = dys
+        elif col == 'dayofyear_cos':
+            row[col] = dyc
         else:
-            new_row[col] = time_features.get(col.split('_')[0], 0)  # Ajuste conforme suas features
+            # se houver mais exógenas, trate aqui
+            row[col] = 0
 
-    # Atualizar janela deslizante
-    window_normalized = np.vstack([window_normalized[1:], x_scaler.transform([list(new_row.values())])])
-    current_input = torch.tensor(window_normalized).float().unsqueeze(0).to(device)
+    # normalize e atualiza janela
+    df_row = pd.DataFrame([row], columns=features_X)
+    norm_row = x_scaler.transform(df_row)
+    window_norm = np.vstack([window_norm[1:], norm_row])
+    current = torch.tensor(window_norm).float().unsqueeze(0).to(device)
 
-    predictions.append({
-        'Timestamp': new_timestamp,
-        **new_row
-    })
-    last_timestamp = new_timestamp
+    predictions.append({'Timestamp': new_ts, **row})
+    last_ts = new_ts
+
 
 # 5. Resultado final
 forecast_df = pd.DataFrame(predictions)
@@ -95,7 +125,7 @@ print("\nPrevisão para as próximas 12 horas:")
 print(forecast_df[['Timestamp'] + FEATURES_Y])
 
 # Opcional: Salvar em CSV
-forecast_df.to_csv('previsao_proximas_12h.csv', index=False)
+forecast_df.to_csv(f'previsao_proximas_{steps/2}_h.csv', index=False)
 # 6. Plotar resultados
 # Preparar dados para plotagem
 plot_df = forecast_df.melt(id_vars='Timestamp',
@@ -108,7 +138,7 @@ plot = (
     ggplot(plot_df, aes(x='Timestamp', y='Valor', color='Variável'))
     + geom_line(size=1)
     + facet_wrap('~Variável', scales='free_y', ncol=2)
-    + labs(title='Previsão das Próximas 12 Horas',
+    + labs(title=f'Previsão das Próximas {steps/2} Horas',
           x='Horário',
           y='Valor Previsto')
     + theme_bw()
