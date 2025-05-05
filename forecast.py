@@ -10,18 +10,18 @@ from plotnine import ggplot, aes, geom_line, labs, theme_bw, facet_wrap, scale_x
 from basic import Model,features_y,features_X
 
 # Configurações
-MODEL_PATH = 'results/main/10/model.h5'
-X_SCALER_PATH = 'results/main/10/x_scaler.pkl'
-Y_SCALER_PATH = 'results/main/10/y_scaler.pkl'
+MODEL_PATH = 'results/main/11/model.pt'
+X_SCALER_PATH = 'results/main/11/x_scaler.pkl'
+Y_SCALER_PATH = 'results/main/11/y_scaler.pkl'
 DATA_PATH = 'data/cleaned_data.csv'
 WINDOW_SIZE = 12
-STEPS = 24
+STEPS = 72
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # %%
 # Configuração do dispositivo e carregamento do modelo
-model = Model(18, 64, 1, 8, 0.1, True).to(device)
+model = Model(18, 128, 2, 8, 0.5, False).to(device)
 model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 
 # %%
@@ -150,5 +150,3 @@ plot = (
 
 plot.save('previsao.png', dpi=300, height=8, width=10)
 print(plot)
-# %%
-print(plot_df)
