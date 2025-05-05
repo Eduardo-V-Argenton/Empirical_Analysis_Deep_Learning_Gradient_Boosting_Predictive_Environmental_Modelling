@@ -52,14 +52,14 @@ best_nrmse = float('inf')
 # Hiperparâmetros
 input_size  = 0
 output_size  = 0
-hidden_size = 256
-num_layers  = 2
-lr          = 0.00016924186859449544
-batch_size  = 64
-dropout     = 0.4
-weight_decay = 4.30016859911945e-06
+hidden_size = 64
+num_layers  = 1
+lr          = 0.00028094363449051186
+batch_size  = 16
+dropout     = 0.1
+weight_decay = 7.21822133635632e-06
 epochs      = 100
-window_size = 48
+window_size = 12
 bidirectional = True
 
 # %%
@@ -87,6 +87,8 @@ for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
 
     input_size = X_tr.shape[2]
     output_size = y_tr.shape[1]
+    print(input_size)
+    print(output_size)
 
     train_loader = DataLoader(TensorDataset(torch.from_numpy(X_tr).float(),
                                             torch.from_numpy(y_tr).float()),
@@ -98,8 +100,8 @@ for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
     # Modelo
 
     model = Model(input_size, hidden_size, num_layers, output_size, dropout, bidirectional).to(device)
-    criterion = nn.HuberLoss()
-    optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=1e-4)
+    criterion = nn.MSELoss()
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
         mode='min',

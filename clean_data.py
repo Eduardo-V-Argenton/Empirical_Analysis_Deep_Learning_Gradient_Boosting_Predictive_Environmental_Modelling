@@ -127,18 +127,32 @@ profile.to_file('profile_report.html')
 
 # %%
 df.reset_index(inplace=True)
-day_secs = 24 * 3600
-secs = df['Timestamp'].dt.hour * 3600 + df['Timestamp'].dt.minute * 60 + df['Timestamp'].dt.second
+# 1) Assegure que o índice ou coluna seja datetime
+df['Timestamp'] = pd.to_datetime(df['Timestamp'])
 
-for k in [1, 2, 3]:
-    df[f'hour_sin{k}'] = np.sin(2 * np.pi * k * secs / day_secs)
-    df[f'hour_cos{k}'] = np.cos(2 * np.pi * k * secs / day_secs)
+# 2) Unix time normalizado (feature contínua)
+df['ts_unix'] = df['Timestamp'].astype(int) // 10**9
+df['ts_norm'] = (df['ts_unix'] - df['ts_unix'].mean()) / df['ts_unix'].std()
 
-doy = df['Timestamp'].dt.dayofyear
+# 3) Componentes cíclicos do dia, do ano e da semana
+# hora do dia
+h = df['Timestamp'].dt.hour + df['Timestamp'].dt.minute/60
+df['hour_sin'] = np.sin(2 * np.pi * h / 24)
+df['hour_cos'] = np.cos(2 * np.pi * h / 24)
+
+# dia do ano
+doy = df['Timestamp'].dt.dayofyear + h/24
 df['doy_sin'] = np.sin(2 * np.pi * doy / 365)
 df['doy_cos'] = np.cos(2 * np.pi * doy / 365)
 
-df.drop(columns=['Timestamp'], inplace=True)
+# dia da semana
+dow = df['Timestamp'].dt.dayofweek
+df['dow_sin'] = np.sin(2 * np.pi * dow / 7)
+df['dow_cos'] = np.cos(2 * np.pi * dow / 7)
 
+# 4) Δt entre observações (seu índice for ordenado)
+df = df.sort_values('Timestamp')
+df['delta_t'] = df['ts_unix'].diff().fillna(0)
+df['delta_t_norm'] = (df['delta_t'] - df['delta_t'].mean()) / df['delta_t'].std()
 # %%
 df.to_csv('data/cleaned_data.csv', index=False)
