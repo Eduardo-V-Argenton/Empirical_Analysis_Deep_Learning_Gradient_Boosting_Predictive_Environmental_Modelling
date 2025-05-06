@@ -1,0 +1,13 @@
+{
+    "window_size": 30,
+    "hidden_size": 32,
+    "num_layers": 1,
+    "learning_rate": 0.006181183374695669,
+    "batch_size": 32,
+    "dropout": 0.5,
+    "weight_decay": 2.409667567885312e-05,
+    "bidirectional": true,
+    "loss": "huber",
+    "optimizer": "Adam",
+    "scaler": "MinMaxScaler"
+}

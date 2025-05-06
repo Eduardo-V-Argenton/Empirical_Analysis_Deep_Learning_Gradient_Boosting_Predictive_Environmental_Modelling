@@ -1,0 +1,6 @@
+fold,avg_nrmse,is_best
+1,0.7369231,False
+2,128800014000.0,False
+3,0.5798062,False
+4,0.48784888,True
+5,0.52948266,False
