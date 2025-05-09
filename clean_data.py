@@ -9,17 +9,15 @@ from ydata_profiling import ProfileReport
 
 # %%
 df = pd.read_csv('data/ground_station.csv')
-df.describe()
-
-# %%
-df['Timestamp'] = pd.to_datetime(df['Created_at'])
-df = df[df['Timestamp'] >= pd.to_datetime('2024-05-30')]
-df.set_index('Timestamp', inplace=True)
-df = df.drop(columns=['Created_at'], axis=1)
-df = df.drop(columns=['Longitude'], axis=1)
-df = df.drop(columns=['Latitude'], axis=1)
+df['Timestamp'] = df['Created_at']
+df = df.drop("Created_at",axis=1)
+df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+df = df.sort_values('Timestamp')
+df = df[~df['Timestamp'].duplicated(keep='first')]
+df = df.set_index('Timestamp').sort_index()
 df = df.resample('30min').mean()
-df = df.interpolate(method='time')
+df.reset_index(inplace=True)
+df = df.dropna(subset=['Temperature'])
 # %%
 df.describe()
 
@@ -27,7 +25,7 @@ df.describe()
 decomps = {}
 residuals = pd.DataFrame(index=df.index)
 for col in df.columns:
-    if col == 'Timestamp':
+    if col in ['Timestamp','Longitude', 'Latitude']:
         continue
     stl_res = STL(df[col], period=24, robust=True).fit()
     decomps[col] = stl_res
@@ -56,15 +54,6 @@ df_clean.drop(columns=['is_multivariate_anomaly'], inplace=True)
 df.drop(columns=['is_multivariate_anomaly'], inplace=True)
 df_clean.head()
 
-# %%
-df_clean['Temperature'] = df_clean['Temperature'].round(3)
-df_clean['Precipitation'] = df_clean['Precipitation'].round(3)
-df_clean['Humidity'] = df_clean['Humidity'].round(3)
-df_clean['Wind_Speed_kmh'] = df_clean['Wind_Speed_kmh'].round(3)
-df_clean['Wind_Direction'] = df_clean['Wind_Direction'].round(3)
-df_clean['Soil_Moisture'] = df_clean['Soil_Moisture'].round(3)
-df_clean['Soil_Temperature'] = df_clean['Soil_Temperature'].round(3)
-df_clean.head()
 # %%
 print('--- Original ---')
 print(df.describe())
@@ -155,4 +144,30 @@ df = df.sort_values('Timestamp')
 df['delta_t'] = df['ts_unix'].diff().fillna(0)
 df['delta_t_norm'] = (df['delta_t'] - df['delta_t'].mean()) / df['delta_t'].std()
 # %%
-df.to_csv('data/cleaned_data.csv', index=False)
+num_cols = df.select_dtypes(include=['number']).columns
+df[num_cols] = df[num_cols].round(3)
+# %%
+df['diff'] = df['Timestamp'].diff()
+max_gap = pd.Timedelta(hours=4)
+df['is_break'] = df['diff'] > max_gap
+df['segment'] = df['is_break'].cumsum().fillna(0).astype(int)
+
+print("Máximo intervalo entre pontos:", df['diff'].max())
+print("Segmentos encontrados:", df['segment'].unique())
+
+for seg, grp in df.groupby('segment'):
+    count = len(grp)
+    if count > 150:
+        start_Timestamp = grp['Timestamp'].min().strftime('%Y-%m-%d %H:%M:%S')
+        end_Timestamp   = grp['Timestamp'].max().strftime('%Y-%m-%d %H:%M:%S')
+        filename = f'serie_segmento_{seg}.csv'
+        grp = grp.drop('diff', axis=1)
+        grp = grp.drop('is_break', axis=1)
+        grp = grp.drop('segment', axis=1)
+        grp = grp.drop('index', axis =1)
+        grp = grp.set_index('Timestamp')
+        grp = grp.resample('30min').mean()
+        grp = grp.interpolate(method='linear')
+        grp = grp.ffill().bfill()
+        grp.to_csv(filename)
+        print(f'Criado: {filename} | Segmento {seg}: {start_Timestamp} → {end_Timestamp} ({len(grp)} registros)')
