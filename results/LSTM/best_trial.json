@@ -1,0 +1,13 @@
+{
+    "best_value": 42.009663079630656,
+    "best_params": {
+        "input_chunk_length": 60,
+        "training_length": 82,
+        "hidden_size": 212,
+        "layer_size": 1,
+        "dropout": 0.39653758740344514,
+        "batch_size": 18,
+        "lr": 3.0378489033878987e-05,
+        "forecast_horizon": 1
+    }
+}
