@@ -1,0 +1,16 @@
+{
+    "best_value": 47.50603795663282,
+    "best_params": {
+        "output_chunk_length": 27,
+        "input_chunk_length": 29,
+        "d_model": 128,
+        "nhead": 2,
+        "num_encoder_layers": 4,
+        "num_decoder_layers": 3,
+        "activation": "ReLU",
+        "dropout": 0.0981872905633329,
+        "lr": 0.0013910309719749859,
+        "batch_size": 46,
+        "forecast_horizon": 5
+    }
+}
