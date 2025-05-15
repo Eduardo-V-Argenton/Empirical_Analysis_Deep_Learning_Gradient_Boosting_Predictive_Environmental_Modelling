@@ -1,0 +1,16 @@
+{
+    "best_value": 51.62609841430928,
+    "best_params": {
+        "output_chunk_length": 40,
+        "input_chunk_length": 60,
+        "hidden_size": 222,
+        "lstm_layers": 1,
+        "num_attention_heads": 4,
+        "hidden_continuous_size": 25,
+        "add_relative_index": true,
+        "dropout": 0.3,
+        "batch_size": 43,
+        "lr": 0.00031002620708540484,
+        "forecast_horizon": 7
+    }
+}
