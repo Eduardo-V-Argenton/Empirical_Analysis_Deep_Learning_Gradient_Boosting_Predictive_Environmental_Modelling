@@ -1,16 +1,16 @@
 {
-    "best_value": 50.43235393618171,
+    "best_value": 46.745670426740844,
     "best_params": {
-        "output_chunk_length": 27,
-        "input_chunk_length": 38,
+        "output_chunk_length": 14,
+        "input_chunk_length": 17,
         "num_layers": 1,
         "num_blocks": 3,
         "num_stacks": 2,
-        "layer_widths": 85,
+        "layer_widths": 173,
         "activation": "GELU",
-        "dropout": 0.18882539432465545,
-        "batch_size": 37,
-        "lr": 0.006016691509040486,
-        "forecast_horizon": 12
+        "dropout": 0.25275218141405936,
+        "batch_size": 26,
+        "lr": 0.0006811809549645802,
+        "forecast_horizon": 1
     }
 }
