@@ -1,0 +1,52 @@
+{
+    "MSE": {
+        "Temperature": 2.3416452966694217e-06,
+        "Precipitation_accumulated": 6.175721732492543e-08,
+        "Humidity": 6.482157940871016e-05,
+        "Wind_Speed_kmh": 1.1625805184456002e-07,
+        "Soil_Moisture": 0.04523405944455223,
+        "Soil_Temperature": 4.024233775533484e-06,
+        "Wind_Dir_Sin": 3.9800777957205674e-08,
+        "Wind_Dir_Cos": 5.662429999044567e-08
+    },
+    "RMSE": {
+        "Temperature": 0.0015302435416199023,
+        "Precipitation_accumulated": 0.00024850999441657356,
+        "Humidity": 0.00805118496922721,
+        "Wind_Speed_kmh": 0.00034096635001794535,
+        "Soil_Moisture": 0.2126830022464236,
+        "Soil_Temperature": 0.002006049295389693,
+        "Wind_Dir_Sin": 0.00019950132319662863,
+        "Wind_Dir_Cos": 0.0002379586098262588
+    },
+    "MAE": {
+        "Temperature": 0.0011275148851362478,
+        "Precipitation_accumulated": 0.00013669212134644594,
+        "Humidity": 0.0030317514781689945,
+        "Wind_Speed_kmh": 0.00025014239883857167,
+        "Soil_Moisture": 0.11580354720397558,
+        "Soil_Temperature": 0.0014067137931581455,
+        "Wind_Dir_Sin": 0.00014323445690569254,
+        "Wind_Dir_Cos": 0.00016251380204700832
+    },
+    "R2": {
+        "Temperature": 0.9999999326762126,
+        "Precipitation_accumulated": 0.9999999453610049,
+        "Humidity": 0.9999997713179042,
+        "Wind_Speed_kmh": 0.9999997158935353,
+        "Soil_Moisture": 0.9999999446280268,
+        "Soil_Temperature": 0.9999999103965151,
+        "Wind_Dir_Sin": 0.9999998848280496,
+        "Wind_Dir_Cos": 0.9999998182655842
+    },
+    "SMAPE": {
+        "Temperature": 0.008268478984350371,
+        "Precipitation_accumulated": 0.0040684187970800815,
+        "Humidity": 0.004266303850841654,
+        "Wind_Speed_kmh": 0.6030624701086491,
+        "Soil_Moisture": 0.0014369930684352869,
+        "Soil_Temperature": 0.009904976342250753,
+        "Wind_Dir_Sin": 3.4765385146838517,
+        "Wind_Dir_Cos": 0.5856394558695301
+    }
+}

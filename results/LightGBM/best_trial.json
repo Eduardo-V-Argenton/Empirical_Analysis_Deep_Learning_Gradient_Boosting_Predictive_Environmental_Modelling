@@ -1,0 +1,16 @@
+{
+    "best_value": 28.225349183389312,
+    "best_params": {
+        "num_target_lags": 15,
+        "boosting_type": "gbdt",
+        "n_estimators": 600,
+        "learning_rate": 0.09741262306069767,
+        "num_leaves": 50,
+        "max_depth": 12,
+        "min_child_samples": 10,
+        "subsample": 1.0,
+        "feature_fraction": 0.8,
+        "reg_alpha": 0.0007612501682515607,
+        "reg_lambda": 0.022722609876655635
+    }
+}
