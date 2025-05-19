@@ -174,3 +174,4 @@ cython_debug/
 .pypirc
 
 darts_logs
+.idea
