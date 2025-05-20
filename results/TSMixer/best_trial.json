@@ -1,17 +1,15 @@
 {
-    "best_value": 46.523699381442434,
+    "best_value": 43.56352294806756,
     "best_params": {
-        "output_chunk_length": 15,
-        "input_chunk_length": 79,
-        "hidden_size": 32,
-        "ff_size": 63,
-        "num_blocks": 1,
-        "dropout": 0.3,
-        "activation": "ReLU",
-        "norm_type": "LayerNorm",
-        "normalize_before": true,
-        "batch_size": 24,
-        "lr": 0.003604102624018897,
-        "forecast_horizon": 1
+        "input_chunk_length": 61,
+        "hidden_size": 128,
+        "ff_size": 153,
+        "num_blocks": 3,
+        "dropout": 0.15000000000000002,
+        "activation": "GELU",
+        "norm_type": "TimeBatchNorm2d",
+        "normalize_before": false,
+        "batch_size": 22,
+        "lr": 0.0004332871234178122
     }
 }
