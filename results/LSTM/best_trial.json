@@ -1,13 +1,15 @@
 {
-    "best_value": 42.009663079630656,
+    "best_value": 0.09531845089539022,
     "best_params": {
-        "input_chunk_length": 60,
-        "training_length": 82,
-        "hidden_size": 212,
+        "input_chunk_length": 65,
+        "output_chunk_length": 1,
+        "hidden_size": 122,
         "layer_size": 1,
-        "dropout": 0.39653758740344514,
-        "batch_size": 18,
-        "lr": 3.0378489033878987e-05,
-        "forecast_horizon": 1
+        "dropout": 0.12887879111838008,
+        "batch_size": 106,
+        "lr": 0.0016408452237179332,
+        "weight_decay": 9.711713443577775e-05,
+        "loss_fn": "smoothl1",
+        "optimizer": "Adam"
     }
 }
