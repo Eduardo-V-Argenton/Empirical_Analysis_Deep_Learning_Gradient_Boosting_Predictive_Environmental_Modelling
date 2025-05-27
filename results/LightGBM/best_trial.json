@@ -1,16 +1,16 @@
 {
-    "best_value": 28.225349183389312,
+    "best_value": 0.07699758781537604,
     "best_params": {
-        "num_target_lags": 15,
+        "num_target_lags": 21,
         "boosting_type": "gbdt",
-        "n_estimators": 600,
-        "learning_rate": 0.09741262306069767,
-        "num_leaves": 50,
-        "max_depth": 12,
-        "min_child_samples": 10,
-        "subsample": 1.0,
-        "feature_fraction": 0.8,
-        "reg_alpha": 0.0007612501682515607,
-        "reg_lambda": 0.022722609876655635
+        "n_estimators": 550,
+        "learning_rate": 0.01064565934724224,
+        "num_leaves": 20,
+        "max_depth": 7,
+        "min_child_samples": 30,
+        "subsample": 0.85,
+        "feature_fraction": 0.9,
+        "reg_alpha": 0.00037129434509650366,
+        "reg_lambda": 3.761173838059388e-05
     }
 }
