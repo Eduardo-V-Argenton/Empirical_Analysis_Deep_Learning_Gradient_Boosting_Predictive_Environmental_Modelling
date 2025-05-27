@@ -1,17 +1,16 @@
 {
-    "best_value": 41.92694797342445,
+    "best_value": 0.07975567767844809,
     "best_params": {
-        "num_target_lags": 14,
-        "output_chunk_length": 8,
-        "forecast_horizon": 8,
-        "n_estimators": 400,
-        "max_depth": 7,
-        "learning_rate": 0.03200570242677771,
-        "min_child_weight": 3,
-        "subsample": 1.0,
-        "colsample_bytree": 0.6,
-        "gamma": 0.0,
-        "reg_alpha": 0.004067293711184323,
-        "reg_lambda": 0.3984658853981022
+        "num_target_lags": 16,
+        "output_chunk_length": 1,
+        "n_estimators": 550,
+        "max_depth": 4,
+        "learning_rate": 0.021776422794897058,
+        "min_child_weight": 7,
+        "subsample": 0.9,
+        "colsample_bytree": 0.8,
+        "gamma": 0.1,
+        "reg_alpha": 4.745332363644534e-05,
+        "reg_lambda": 0.012349873114991963
     }
 }
