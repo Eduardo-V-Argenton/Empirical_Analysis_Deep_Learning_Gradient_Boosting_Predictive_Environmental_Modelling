@@ -1,16 +1,18 @@
 {
-    "best_value": 49.88489953215585,
+    "best_value": 0.08353507711014438,
     "best_params": {
-        "output_chunk_length": 23,
-        "input_chunk_length": 51,
-        "num_filters": 80,
-        "kernel_size": 7,
-        "num_layers": 2,
-        "dilation_base": 3,
+        "input_chunk_length": 29,
+        "output_chunk_length": 1,
+        "dropout": 0.10987578257441336,
+        "batch_size": 107,
+        "lr": 0.004525867812805064,
+        "weight_decay": 0.00015619537785532893,
+        "num_filters": 50,
+        "kernel_size": 8,
+        "num_layers": 3,
+        "dilation_base": 4,
         "weight_norm": true,
-        "dropout": 0.23651755253117632,
-        "batch_size": 19,
-        "lr": 0.0018803485512635706,
-        "forecast_horizon": 19
+        "loss_fn": "smoothl1",
+        "optimizer": "AdamW"
     }
 }
