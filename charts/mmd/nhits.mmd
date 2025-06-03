@@ -1,0 +1,109 @@
+---
+config:
+  theme: redux
+  layout: fixed
+  look: classic
+  flowchart:
+    curve: linear
+---
+flowchart TB
+ subgraph Input["Input"]
+        A(["Features"])
+        B(["Covariates<br>"])
+        B4{"Input Chunk<br><small>[x<sub>t-44</sub>, ..., x<sub>t</sub>]</small>"}
+  end
+ subgraph B11["Block 1"]
+        L111("h<sub>1</sub><br>")
+        L112("h<sub>2</sub><br>")
+        DOTS11["..."]
+        L113("h<sub>243</sub><br>")
+  end
+ subgraph B12["Block 2"]
+        L121("h<sub>1</sub><br>")
+        L122("h<sub>2</sub><br>")
+        DOTS12["..."]
+        L123("h<sub>243</sub><br>")
+  end
+ subgraph B14["Block 4"]
+        L141("h<sub>1</sub><br>")
+        L142("h<sub>2</sub><br>")
+        DOTS14["..."]
+        L143("h<sub>243</sub><br>")
+  end
+ subgraph S1["Stack 1"]
+        B11
+        B12
+        B14
+  end
+ subgraph B21["Block 1"]
+        L211("h<sub>1</sub><br>")
+        L212("h<sub>2</sub><br>")
+        DOTS21["..."]
+        L213("h<sub>243</sub><br>")
+  end
+ subgraph B22["Block 2"]
+        L221("h<sub>1</sub><br>")
+        L222("h<sub>2</sub><br>")
+        DOTS22["..."]
+        L223("h<sub>243</sub><br>")
+  end
+ subgraph B24["Block 4"]
+        L241("h<sub>1</sub><br>")
+        L242("h<sub>2</sub><br>")
+        DOTS24["..."]
+        L243("h<sub>243</sub><br>")
+  end
+ subgraph S2["Stack 2"]
+        B21
+        B22
+        B24
+  end
+ subgraph B31["Block 1"]
+        L311("h<sub>1</sub><br>")
+        L312("h<sub>2</sub><br>")
+        DOTS31["..."]
+        L313("h<sub>243</sub><br>")
+  end
+ subgraph B32["Block 2"]
+        L321("h<sub>1</sub><br>")
+        L322("h<sub>2</sub><br>")
+        DOTS32["..."]
+        L323("h<sub>243</sub><br>")
+  end
+ subgraph B34["Block 4"]
+        L341("h<sub>1</sub><br>")
+        L342("h<sub>2</sub><br>")
+        DOTS34["..."]
+        L343("h<sub>243</sub><br>")
+  end
+ subgraph S3["Stack 3"]
+        B31
+        B32
+        B34
+  end
+ subgraph Output["Output"]
+        F(["Features"])
+  end
+    A --> B4
+    B --> B4
+    B4 --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 --> Output
+    B11 -- "dropout≈0.13" --> B12
+    B21 -- "dropout≈0.13" --> B22
+    B31 -- "dropout≈0.13" --> B32
+    B12 -- "..." --> B14
+    B22 -- "..." --> B24
+    B32 -- "..." --> B34
+    n1["activation=GELU"]
+    n1@{ shape: text}
+    style DOTS11 fill:transparent,stroke:transparent
+    style DOTS12 fill:transparent,stroke:transparent
+    style DOTS14 fill:transparent,stroke:transparent
+    style DOTS21 fill:transparent,stroke:transparent
+    style DOTS22 fill:transparent,stroke:transparent
+    style DOTS24 fill:transparent,stroke:transparent
+    style DOTS31 fill:transparent,stroke:transparent
+    style DOTS32 fill:transparent,stroke:transparent
+    style DOTS34 fill:transparent,stroke:transparent

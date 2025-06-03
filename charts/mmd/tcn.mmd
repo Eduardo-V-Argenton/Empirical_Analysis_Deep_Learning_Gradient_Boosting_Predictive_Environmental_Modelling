@@ -1,0 +1,46 @@
+---
+config:
+  theme: redux
+  layout: fixed
+  look: classic
+  flowchart:
+    curve: linear
+---
+flowchart LR
+ subgraph Input["Input"]
+        A(["Features"])
+        B(["Covariates<br>"])
+        B4{"Input Chunk<br><small>[x<sub>t-28</sub>, ..., x<sub>t</sub>]</small>"}
+  end
+ subgraph TCN1["TCN Layer 1<br><small>dilation=1</small>"]
+        L11("h<sub>1</sub><br>")
+        L12("h<sub>2</sub><br>")
+        DOTS["..."]
+        L13("h<sub>50</sub><br>")
+  end
+ subgraph TCN2["TCN Layer 2<br><small>dilation=4</small>"]
+        L21("h<sub>1</sub><br>")
+        L22("h<sub>2</sub><br>")
+        DOTS2["..."]
+        L23("h<sub>50</sub><br>")
+  end
+ subgraph TCN3["TCN Layer 3<br><small>dilation=16</small>"]
+        L31("h<sub>1</sub><br>")
+        L32("h<sub>2</sub><br>")
+        DOTS3["..."]
+        L33("h<sub>50</sub><br>")
+  end
+ subgraph Output["Output"]
+        F(["Features"])
+  end
+    A --> B4
+    B --> B4
+    B4 --> TCN1
+    TCN1 -- "dropout≈0.11" --> TCN2
+    TCN2 -- "dropout≈0.11" --> TCN3
+    TCN3 --> Output
+    n1["each layer has kernel size = 8"]
+    n1@{ shape: text}
+    style DOTS fill:transparent,stroke:transparent
+    style DOTS2 fill:transparent,stroke:transparent
+    style DOTS3 fill:transparent,stroke:transparent

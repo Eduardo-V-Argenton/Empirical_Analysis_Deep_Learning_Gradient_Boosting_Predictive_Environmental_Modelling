@@ -1,0 +1,66 @@
+---
+config:
+  theme: redux
+  layout: dagre
+  look: classic
+  flowchart:
+    curve: linear
+---
+flowchart TD
+ subgraph Input["Input"]
+        A(["Features"])
+        B(["Covariates<br>"])
+        B4{"Target Lag<br><small>[x<sub>t-4</sub>, ..., x<sub>t</sub>]</small>"}
+  end
+
+ subgraph E1["Estimator 1<br>"]
+        N11(("0"))
+        N12(("1,1"))
+        N13(("2,1"))
+        N14(("1,2"))
+        N15(("2,2"))
+        N16(("18,1"))
+
+  end
+ subgraph E2["Estimator 2<br>"]
+        N21(("0"))
+        N22(("1,1"))
+        N23(("2,1"))
+        N24(("1,2"))
+        N25(("2,2"))
+        N26(("18,1"))
+  end
+ subgraph E3["Estimator 150<br>"]
+        N31(("0"))
+        N32(("1,1"))
+        N33(("2,1"))
+        N34(("1,2"))
+        N35(("2,2"))
+        N36(("18,1"))
+  end
+ subgraph Output["Output"]
+        F(["Features"])
+  end
+    A --> B4
+    B --> B4
+
+    N11---N12---N13---N16
+    N11---N14
+    N12---N15
+
+    N21---N22---N23---N26
+    N21---N24
+    N22---N25
+
+    N31---N32---N33---N36
+    N31---N34
+    N32---N35
+
+    B4--≈0.57-->E1
+    B4--≈0.57-->E2
+    B4--≈0.57-->E3
+    E1--\+-->Output
+    E2--\+-->Output
+    E3--\+-->Output
+    n1["max_depth=18<br>min_sample_split=13<br>min_samples_leaf=5<br>min_weight_fraction_leaf≈3.5x10⁴"]
+    n1@{ shape: text}

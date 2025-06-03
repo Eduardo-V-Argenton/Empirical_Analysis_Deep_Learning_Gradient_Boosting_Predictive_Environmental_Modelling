@@ -1,0 +1,62 @@
+---
+config:
+  theme: redux
+  layout: fixed
+  look: classic
+  flowchart:
+    curve: linear
+---
+flowchart LR
+ subgraph Input["Input"]
+        A(["Features"])
+        B(["Covariates<br>"])
+        B4{"Input Chunk<br><small>[x<sub>t-24</sub>, ..., x<sub>t</sub>]</small>"}
+  end
+ subgraph Encoder["Encoder Layer 1"]
+        E11("h<sub>1</sub><br>")
+        E12("h<sub>2</sub><br>")
+        DOTS["..."]
+        E13("h<sub>64</sub><br>")
+  end
+ subgraph Encoder2["Encoder Layer 2"]
+        E21("h<sub>1</sub><br>")
+        E22("h<sub>2</sub><br>")
+        DOTS1["..."]
+        E23("h<sub>64</sub><br>")
+  end
+ subgraph Encoder3["Encoder Layer 3"]
+        E31("h<sub>1</sub><br>")
+        E32("h<sub>2</sub><br>")
+        DOTS2["..."]
+        E33("h<sub>64</sub><br>")
+  end
+ subgraph Decoder["Decoder Layer 1"]
+        D11("h<sub>1</sub><br>")
+        D12("h<sub>2</sub><br>")
+        DOTS3["..."]
+        D13("h<sub>64</sub><br>")
+  end
+ subgraph Decoder2["Decoder Layer 2"]
+        D21("h<sub>1</sub><br>")
+        D22("h<sub>2</sub><br>")
+        DOTS4["..."]
+        D23("h<sub>64</sub><br>")
+  end
+ subgraph Output["Output"]
+        F(["Features"])
+  end
+    A --> B4
+    B --> B4
+    B4 --> Encoder
+    Encoder -- "dropout≈0.217" --> Encoder2
+    Encoder2 -- "dropout≈0.217" --> Encoder3
+    Encoder3 --> Decoder
+    Decoder -- "dropout≈0.217" --> Decoder2
+    Decoder2 --> Output
+    n1["temporal_width_past=2<br>temporal_width_future=1<br>use_reversible_instance_norm=true"]
+    n1@{ shape: text}
+    style DOTS fill:transparent,stroke:transparent
+    style DOTS2 fill:transparent,stroke:transparent
+    style DOTS1 fill:transparent,stroke:transparent
+    style DOTS3 fill:transparent,stroke:transparent
+    style DOTS4 fill:transparent,stroke:transparent

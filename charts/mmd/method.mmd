@@ -1,0 +1,22 @@
+---
+config:
+  theme: redux
+  layout: fixed
+  look: classic
+  flowchart:
+    curve: linear
+---
+flowchart LR
+    A(["Start"]) --> B("Set HPO<br>hyperparameters")
+    B --> C("Run HPO")
+    C --> D("Get best values for<br>hyperparameters")
+    D --> E("Train model with TimeSeriesSplit")
+    E --> F("Evaluate model")
+    F --> G{"Best R²?"}
+    G -- Yes --> H("Save Model")
+    G -- No ---> H0{"There were already<br>7 folds?"}
+    H --> H0
+    H0 -- No ---> E
+    H0 -- Yes --> I("Load Best Model")
+    I --> J("Draw graphs")
+    J --> k(["End"])

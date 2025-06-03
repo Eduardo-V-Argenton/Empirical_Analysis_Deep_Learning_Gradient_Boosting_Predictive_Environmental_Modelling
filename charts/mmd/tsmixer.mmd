@@ -1,0 +1,43 @@
+---
+config:
+  theme: redux
+  layout: dagre
+  look: classic
+  flowchart:
+    curve: linear
+---
+flowchart LR
+ subgraph Input["Input"]
+        A(["Features"])
+        B(["Covariates<br>"])
+        B4{"Input Chunk<br><small>[x<sub>t-26</sub>, ..., x<sub>t</sub>]</small>"}
+  end
+ subgraph Block["TSMixer Block"]
+    subgraph LL1["Linear Layer 1"]
+        E1("h<sub>1</sub><br>")
+        E2("h<sub>2</sub><br>")
+        DOTS["..."]
+        E3("h<sub>128</sub><br>")
+    end
+    AC["ReLU"]
+    subgraph LL2["Linear Layer 2"]
+        F1("f<sub>1</sub><br>")
+        F2("f<sub>2</sub><br>")
+        DOTS2["..."]
+        F3("f<sub>132</sub><br>")
+    end
+  end
+ subgraph Output["Output"]
+        F(["Features"])
+  end
+    A --> B4
+    B --> B4
+    LL1--"128-->132"-->AC--"dropout≈0.45"-->LL2
+    B4 --> LL1
+    LL2--"132-->128"-->Output
+    n1["norm_type=TimeBatchNorm2d<br>normalize_before=true"]
+    n1@{ shape: text}
+    style DOTS fill:transparent,stroke:transparent    
+    style DOTS2 fill:transparent,stroke:transparent
+
+
