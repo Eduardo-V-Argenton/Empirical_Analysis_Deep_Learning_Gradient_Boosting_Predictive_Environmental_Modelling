@@ -1,19 +1,16 @@
 {
-    "best_value": 0.07853027585428113,
+    "best_value": 75.31818223557848,
     "best_params": {
-        "input_chunk_length": 27,
-        "output_chunk_length": 1,
-        "dropout": 0.45087323478159125,
-        "batch_size": 67,
-        "lr": 0.004216838508548973,
-        "weight_decay": 0.000358724351349336,
-        "hidden_size": 128,
-        "ff_size": 132,
+        "input_chunk_length": 72,
+        "hidden_size": 64,
+        "dropout": 0.4,
+        "batch_size": 104,
+        "lr": 0.0034622439183209846,
+        "weight_decay": 0.0003418366393068562,
+        "ff_size": 231,
         "num_blocks": 1,
-        "activation": "ReLU",
-        "norm_type": "TimeBatchNorm2d",
-        "normalize_before": true,
-        "loss_fn": "smoothl1",
-        "optimizer": "AdamW"
+        "activation": "GELU",
+        "norm_type": "LayerNorm",
+        "normalize_before": false
     }
 }
