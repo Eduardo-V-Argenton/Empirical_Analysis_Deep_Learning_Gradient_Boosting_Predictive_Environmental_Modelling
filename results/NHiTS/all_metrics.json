@@ -1,0 +1,438 @@
+{
+    "average": {
+        "MSE": {
+            "Temperature": 414.27601849005976,
+            "Precipitation_accumulated": 19864.056354326556,
+            "Humidity": 2524.4985933674598,
+            "Wind_Speed_kmh": 1.5350816509489218,
+            "Soil_Moisture": 1973579.8903822217,
+            "Soil_Temperature": 2130.9502291602766,
+            "Wind_Dir_Sin": 0.725623808156491,
+            "Wind_Dir_Cos": 0.44858314561095003
+        },
+        "RMSE": {
+            "Temperature": 13.298781059316932,
+            "Precipitation_accumulated": 123.82211087910503,
+            "Humidity": 30.194232845657986,
+            "Wind_Speed_kmh": 1.1170819114707777,
+            "Soil_Moisture": 1187.469322406633,
+            "Soil_Temperature": 24.71812649631082,
+            "Wind_Dir_Sin": 0.6332475453300388,
+            "Wind_Dir_Cos": 0.6500056104031693
+        },
+        "MAE": {
+            "Temperature": 9.364417638548243,
+            "Precipitation_accumulated": 97.95625876218864,
+            "Humidity": 20.52331090256021,
+            "Wind_Speed_kmh": 0.9206676359310932,
+            "Soil_Moisture": 976.8825369900318,
+            "Soil_Temperature": 15.326466470706896,
+            "Wind_Dir_Sin": 0.48423147136437994,
+            "Wind_Dir_Cos": 0.5317652811777619
+        },
+        "R2": {
+            "Temperature": -27.926789168264474,
+            "Precipitation_accumulated": -1609239.365659038,
+            "Humidity": -9.182422277789401,
+            "Wind_Speed_kmh": -Infinity,
+            "Soil_Moisture": -46.91327795644895,
+            "Soil_Temperature": -82.45552218167016,
+            "Wind_Dir_Sin": -Infinity,
+            "Wind_Dir_Cos": -Infinity
+        },
+        "SMAPE": {
+            "Temperature": 52.93193483897401,
+            "Precipitation_accumulated": 46.04244971387688,
+            "Humidity": 22.2068665619285,
+            "Wind_Speed_kmh": 151.11871604538865,
+            "Soil_Moisture": 12.854191966900498,
+            "Soil_Temperature": 53.76321439730195,
+            "Wind_Dir_Sin": 180.59685560474207,
+            "Wind_Dir_Cos": 92.07714845634708
+        },
+        "WMAPE": {
+            "Temperature": 81.12073157032376,
+            "Precipitation_accumulated": 34.9943040567813,
+            "Humidity": 25.887789159634373,
+            "Wind_Speed_kmh": Infinity,
+            "Soil_Moisture": 13.427757514870473,
+            "Soil_Temperature": 119.14471054682114,
+            "Wind_Dir_Sin": Infinity,
+            "Wind_Dir_Cos": 69.6316181389725
+        }
+    },
+    "best_fold": {
+        "MSE": {
+            "Temperature": 7.009008497487364,
+            "Precipitation_accumulated": 19460.272907745635,
+            "Humidity": 74.01289441097674,
+            "Wind_Speed_kmh": 0.5944376781853812,
+            "Soil_Moisture": 232039.5783154489,
+            "Soil_Temperature": 6.783185314010112,
+            "Wind_Dir_Sin": 0.0412310683586135,
+            "Wind_Dir_Cos": 0.46078235542846513
+        },
+        "RMSE": {
+            "Temperature": 2.6474532096880132,
+            "Precipitation_accumulated": 139.500082106591,
+            "Humidity": 8.603074706811324,
+            "Wind_Speed_kmh": 0.7709978457722052,
+            "Soil_Moisture": 481.70486640208327,
+            "Soil_Temperature": 2.6044548976724693,
+            "Wind_Dir_Sin": 0.20305434828787464,
+            "Wind_Dir_Cos": 0.6788095133603131
+        },
+        "MAE": {
+            "Temperature": 2.265805358176975,
+            "Precipitation_accumulated": 133.36824706636165,
+            "Humidity": 7.850490529985796,
+            "Wind_Speed_kmh": 0.7427057505570241,
+            "Soil_Moisture": 472.6146709934691,
+            "Soil_Temperature": 2.1604899159021618,
+            "Wind_Dir_Sin": 0.19612704928852942,
+            "Wind_Dir_Cos": 0.6649052970988271
+        },
+        "R2": {
+            "Temperature": 0.09895920198623553,
+            "Precipitation_accumulated": -7918199.64237078,
+            "Humidity": -2.537649127937933,
+            "Wind_Speed_kmh": -65582561.20755736,
+            "Soil_Moisture": -42.32029674589982,
+            "Soil_Temperature": 0.19688170624273504,
+            "Wind_Dir_Sin": -Infinity,
+            "Wind_Dir_Cos": -Infinity
+        },
+        "SMAPE": {
+            "Temperature": 14.883397833385382,
+            "Precipitation_accumulated": 34.72793627631467,
+            "Humidity": 9.461177459376046,
+            "Wind_Speed_kmh": 199.99891826756732,
+            "Soil_Moisture": 7.12713607105362,
+            "Soil_Temperature": 13.979618460169549,
+            "Wind_Dir_Sin": 200.0,
+            "Wind_Dir_Cos": 102.97008760752404
+        },
+        "WMAPE": {
+            "Temperature": 14.651889993443564,
+            "Precipitation_accumulated": 29.111688243739813,
+            "Humidity": 9.129524517656025,
+            "Wind_Speed_kmh": 23190244.355392862,
+            "Soil_Moisture": 7.405099645217732,
+            "Soil_Temperature": 13.958789702024468,
+            "Wind_Dir_Sin": Infinity,
+            "Wind_Dir_Cos": 66.49052970988271
+        }
+    },
+    "all_folds": {
+        "fold_1": {
+            "MSE": {
+                "Temperature": 1932.1861483910798,
+                "Precipitation_accumulated": 60037.15227826375,
+                "Humidity": 12183.449485406682,
+                "Wind_Speed_kmh": 4.14563463165785,
+                "Soil_Moisture": 6908264.7479299605,
+                "Soil_Temperature": 10532.355630978496,
+                "Wind_Dir_Sin": 2.6984823003491725,
+                "Wind_Dir_Cos": 0.6766223735589796
+            },
+            "RMSE": {
+                "Temperature": 43.9566394119373,
+                "Precipitation_accumulated": 245.02479931277108,
+                "Humidity": 110.37866408598485,
+                "Wind_Speed_kmh": 2.0360831593178728,
+                "Soil_Moisture": 2628.357804396114,
+                "Soil_Temperature": 102.62726553396274,
+                "Wind_Dir_Sin": 1.6427057863017263,
+                "Wind_Dir_Cos": 0.8225705888001221
+            },
+            "MAE": {
+                "Temperature": 26.76052493108773,
+                "Precipitation_accumulated": 136.677819385769,
+                "Humidity": 67.11936983999033,
+                "Wind_Speed_kmh": 1.7920988891929888,
+                "Soil_Moisture": 1826.8475234265654,
+                "Soil_Temperature": 57.75048149467503,
+                "Wind_Dir_Sin": 1.1301157053901176,
+                "Wind_Dir_Cos": 0.5723267598873351
+            },
+            "R2": {
+                "Temperature": -40.276154962862144,
+                "Precipitation_accumulated": -0.4221965050396306,
+                "Humidity": -38.71993848705685,
+                "Wind_Speed_kmh": -7.552330596109858,
+                "Soil_Moisture": -4.5859978234525665,
+                "Soil_Temperature": -182.4551419275733,
+                "Wind_Dir_Sin": -6.467220129867492,
+                "Wind_Dir_Cos": -0.19038573163361439
+            },
+            "SMAPE": {
+                "Temperature": 67.14387321275024,
+                "Precipitation_accumulated": 142.77634031044622,
+                "Humidity": 69.42174089143029,
+                "Wind_Speed_kmh": 112.56509224070844,
+                "Soil_Moisture": 20.64014935585809,
+                "Soil_Temperature": 76.59697066579056,
+                "Wind_Dir_Sin": 131.9163763859342,
+                "Wind_Dir_Cos": 72.47286975526686
+            },
+            "WMAPE": {
+                "Temperature": 161.67639462391034,
+                "Precipitation_accumulated": 98.30710224736843,
+                "Humidity": 88.32218676062602,
+                "Wind_Speed_kmh": 193.7150130388506,
+                "Soil_Moisture": 22.88225336103885,
+                "Soil_Temperature": 351.9347047201997,
+                "Wind_Dir_Sin": 225.63285225495503,
+                "Wind_Dir_Cos": 76.9696699145398
+            }
+        },
+        "fold_2": {
+            "MSE": {
+                "Temperature": 7.009008497487364,
+                "Precipitation_accumulated": 19460.272907745635,
+                "Humidity": 74.01289441097674,
+                "Wind_Speed_kmh": 0.5944376781853812,
+                "Soil_Moisture": 232039.5783154489,
+                "Soil_Temperature": 6.783185314010112,
+                "Wind_Dir_Sin": 0.0412310683586135,
+                "Wind_Dir_Cos": 0.46078235542846513
+            },
+            "RMSE": {
+                "Temperature": 2.6474532096880132,
+                "Precipitation_accumulated": 139.500082106591,
+                "Humidity": 8.603074706811324,
+                "Wind_Speed_kmh": 0.7709978457722052,
+                "Soil_Moisture": 481.70486640208327,
+                "Soil_Temperature": 2.6044548976724693,
+                "Wind_Dir_Sin": 0.20305434828787464,
+                "Wind_Dir_Cos": 0.6788095133603131
+            },
+            "MAE": {
+                "Temperature": 2.265805358176975,
+                "Precipitation_accumulated": 133.36824706636165,
+                "Humidity": 7.850490529985796,
+                "Wind_Speed_kmh": 0.7427057505570241,
+                "Soil_Moisture": 472.6146709934691,
+                "Soil_Temperature": 2.1604899159021618,
+                "Wind_Dir_Sin": 0.19612704928852942,
+                "Wind_Dir_Cos": 0.6649052970988271
+            },
+            "R2": {
+                "Temperature": 0.09895920198623553,
+                "Precipitation_accumulated": -7918199.64237078,
+                "Humidity": -2.537649127937933,
+                "Wind_Speed_kmh": -65582561.20755736,
+                "Soil_Moisture": -42.32029674589982,
+                "Soil_Temperature": 0.19688170624273504,
+                "Wind_Dir_Sin": -Infinity,
+                "Wind_Dir_Cos": -Infinity
+            },
+            "SMAPE": {
+                "Temperature": 14.883397833385382,
+                "Precipitation_accumulated": 34.72793627631467,
+                "Humidity": 9.461177459376046,
+                "Wind_Speed_kmh": 199.99891826756732,
+                "Soil_Moisture": 7.12713607105362,
+                "Soil_Temperature": 13.979618460169549,
+                "Wind_Dir_Sin": 200.0,
+                "Wind_Dir_Cos": 102.97008760752404
+            },
+            "WMAPE": {
+                "Temperature": 14.651889993443564,
+                "Precipitation_accumulated": 29.111688243739813,
+                "Humidity": 9.129524517656025,
+                "Wind_Speed_kmh": 23190244.355392862,
+                "Soil_Moisture": 7.405099645217732,
+                "Soil_Temperature": 13.958789702024468,
+                "Wind_Dir_Sin": Infinity,
+                "Wind_Dir_Cos": 66.49052970988271
+            }
+        },
+        "fold_3": {
+            "MSE": {
+                "Temperature": 50.22960071041527,
+                "Precipitation_accumulated": 4678.79884450216,
+                "Humidity": 47.588522476985425,
+                "Wind_Speed_kmh": 0.28157401316130787,
+                "Soil_Moisture": 544358.8797105069,
+                "Soil_Temperature": 40.80179521121345,
+                "Wind_Dir_Sin": 9.822081033582964e-06,
+                "Wind_Dir_Cos": 0.11825629381605887
+            },
+            "RMSE": {
+                "Temperature": 7.087284438373788,
+                "Precipitation_accumulated": 68.40174591706092,
+                "Humidity": 6.898443482191141,
+                "Wind_Speed_kmh": 0.530635480496082,
+                "Soil_Moisture": 737.8068037843693,
+                "Soil_Temperature": 6.387628293131454,
+                "Wind_Dir_Sin": 0.003134019947859771,
+                "Wind_Dir_Cos": 0.34388412847361666
+            },
+            "MAE": {
+                "Temperature": 7.046955884946751,
+                "Precipitation_accumulated": 68.24348934218999,
+                "Humidity": 6.182026369852777,
+                "Wind_Speed_kmh": 0.5295580584097406,
+                "Soil_Moisture": 711.6610057085891,
+                "Soil_Temperature": 6.370846066602277,
+                "Wind_Dir_Sin": 0.0030184847142644966,
+                "Wind_Dir_Cos": 0.34338744125854986
+            },
+            "R2": {
+                "Temperature": -92.19800832232185,
+                "Precipitation_accumulated": -116945.23557915514,
+                "Humidity": -3.9370763325460745,
+                "Wind_Speed_kmh": -Infinity,
+                "Soil_Moisture": -16.056031930465767,
+                "Soil_Temperature": -221.35204469500002,
+                "Wind_Dir_Sin": -Infinity,
+                "Wind_Dir_Cos": -Infinity
+            },
+            "SMAPE": {
+                "Temperature": 55.343282445684586,
+                "Precipitation_accumulated": 16.08948109299953,
+                "Humidity": 6.968905124621228,
+                "Wind_Speed_kmh": 200.0,
+                "Soil_Moisture": 11.36972011848571,
+                "Soil_Temperature": 49.24153025532575,
+                "Wind_Dir_Sin": 200.0,
+                "Wind_Dir_Cos": 41.486263948649096
+            },
+            "WMAPE": {
+                "Temperature": 76.1211547750472,
+                "Precipitation_accumulated": 14.886334394788081,
+                "Humidity": 6.790427729897636,
+                "Wind_Speed_kmh": Infinity,
+                "Soil_Moisture": 12.007847021019096,
+                "Soil_Temperature": 65.2110977874848,
+                "Wind_Dir_Sin": Infinity,
+                "Wind_Dir_Cos": 34.33874412585499
+            }
+        },
+        "fold_4": {
+            "MSE": {
+                "Temperature": 41.47104064005167,
+                "Precipitation_accumulated": 3277.6790587060664,
+                "Humidity": 129.76633886329225,
+                "Wind_Speed_kmh": 0.7589216616565637,
+                "Soil_Moisture": 1116292.1847088786,
+                "Soil_Temperature": 52.44035339612257,
+                "Wind_Dir_Sin": 0.3101819065358749,
+                "Wind_Dir_Cos": 0.4698289718218289
+            },
+            "RMSE": {
+                "Temperature": 6.4398012888637854,
+                "Precipitation_accumulated": 57.2510179709153,
+                "Humidity": 11.391502923815288,
+                "Wind_Speed_kmh": 0.8711610997149515,
+                "Soil_Moisture": 1056.547294118384,
+                "Soil_Temperature": 7.241571196648043,
+                "Wind_Dir_Sin": 0.5569397692173499,
+                "Wind_Dir_Cos": 0.6854407135718077
+            },
+            "MAE": {
+                "Temperature": 5.903581728108455,
+                "Precipitation_accumulated": 42.97464612794437,
+                "Humidity": 10.481155282277143,
+                "Wind_Speed_kmh": 0.4862317210652571,
+                "Soil_Moisture": 868.1859095770333,
+                "Soil_Temperature": 6.5958334898334,
+                "Wind_Dir_Sin": 0.3876928372632981,
+                "Wind_Dir_Cos": 0.4504851716921029
+            },
+            "R2": {
+                "Temperature": -6.792171933315648,
+                "Precipitation_accumulated": -2826.313378416145,
+                "Humidity": -0.5177069777194472,
+                "Wind_Speed_kmh": 0.17506936732785872,
+                "Soil_Moisture": 0.19610988681759023,
+                "Soil_Temperature": -7.918783464803978,
+                "Wind_Dir_Sin": -0.12408221075548909,
+                "Wind_Dir_Cos": 0.007495238675609528
+            },
+            "SMAPE": {
+                "Temperature": 73.622893558849,
+                "Precipitation_accumulated": 10.189433019183074,
+                "Humidity": 12.202023105457972,
+                "Wind_Speed_kmh": 151.18274772806743,
+                "Soil_Moisture": 12.80160946805657,
+                "Soil_Temperature": 80.97094916015291,
+                "Wind_Dir_Sin": 186.55567878345815,
+                "Wind_Dir_Cos": 74.15998746460545
+            },
+            "WMAPE": {
+                "Temperature": 105.32627755874115,
+                "Precipitation_accumulated": 9.34076031256679,
+                "Humidity": 12.44012419446604,
+                "Wind_Speed_kmh": 97.26098235497395,
+                "Soil_Moisture": 13.244351160118912,
+                "Soil_Temperature": 121.9950989707966,
+                "Wind_Dir_Sin": 104.0034855095218,
+                "Wind_Dir_Cos": 58.67359702948961
+            }
+        },
+        "fold_5": {
+            "MSE": {
+                "Temperature": 40.484294211264924,
+                "Precipitation_accumulated": 11866.378682415174,
+                "Humidity": 187.6757256793632,
+                "Wind_Speed_kmh": 1.894840270083507,
+                "Soil_Moisture": 1066944.0612463139,
+                "Soil_Temperature": 22.370180901540337,
+                "Wind_Dir_Sin": 0.5782139434577606,
+                "Wind_Dir_Cos": 0.5174257334294176
+            },
+            "RMSE": {
+                "Temperature": 6.3627269477217805,
+                "Precipitation_accumulated": 108.93290908818682,
+                "Humidity": 13.699479029487334,
+                "Wind_Speed_kmh": 1.3765319720527769,
+                "Soil_Moisture": 1032.929843332215,
+                "Soil_Temperature": 4.729712560139394,
+                "Wind_Dir_Sin": 0.760403802895383,
+                "Wind_Dir_Cos": 0.7193231078099865
+            },
+            "MAE": {
+                "Temperature": 4.845220290421306,
+                "Precipitation_accumulated": 108.51709188867824,
+                "Humidity": 10.98351249069501,
+                "Wind_Speed_kmh": 1.0527437604304561,
+                "Soil_Moisture": 1005.103575244502,
+                "Soil_Temperature": 3.754681386521617,
+                "Wind_Dir_Sin": 0.7042032801656899,
+                "Wind_Dir_Cos": 0.6277217359519947
+            },
+            "R2": {
+                "Temperature": -0.46656982480896114,
+                "Precipitation_accumulated": -8225.214770335018,
+                "Humidity": -0.1997404636866913,
+                "Wind_Speed_kmh": -0.4907074249663983,
+                "Soil_Moisture": -171.8001731692442,
+                "Soil_Temperature": -0.7485225272162674,
+                "Wind_Dir_Sin": -0.04567771394462694,
+                "Wind_Dir_Cos": -0.4779331806047966
+            },
+            "SMAPE": {
+                "Temperature": 53.666227144200846,
+                "Precipitation_accumulated": 26.429057870440925,
+                "Humidity": 12.980486228756972,
+                "Wind_Speed_kmh": 91.84682199060015,
+                "Soil_Moisture": 12.332344821048515,
+                "Soil_Temperature": 48.02700344507102,
+                "Wind_Dir_Sin": 184.51222285431817,
+                "Wind_Dir_Cos": 169.29653350568992
+            },
+            "WMAPE": {
+                "Temperature": 47.827940900476484,
+                "Precipitation_accumulated": 23.325635085443373,
+                "Humidity": 12.756682595526147,
+                "Wind_Speed_kmh": 71.25387673936696,
+                "Soil_Moisture": 11.599236386957783,
+                "Soil_Temperature": 42.62386155360017,
+                "Wind_Dir_Sin": 99.00778305273123,
+                "Wind_Dir_Cos": 111.68554991509542
+            }
+        }
+    }
+}
