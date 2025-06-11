@@ -1,0 +1,15 @@
+{
+    "best_value": 38.12904388679818,
+    "best_params": {
+        "input_chunk_length": 24,
+        "dropout": 0.2,
+        "batch_size": 120,
+        "lr": 0.0033796011278951557,
+        "weight_decay": 0.005818028181773525,
+        "num_layers": 3,
+        "num_blocks": 3,
+        "num_stacks": 4,
+        "layer_widths": 80,
+        "activation": "GELU"
+    }
+}
