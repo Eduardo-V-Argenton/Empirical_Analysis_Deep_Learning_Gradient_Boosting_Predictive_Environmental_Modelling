@@ -1,0 +1,44 @@
+{
+    "MSE": {
+        "Temperature": 4.168965355959514,
+        "Precipitation_accumulated": 24.362446544987485,
+        "Humidity": 10.918324638715285,
+        "Soil_Moisture": 242825.22434686255,
+        "Soil_Temperature": 2.2882625735436166
+    },
+    "RMSE": {
+        "Temperature": 2.0418044362669785,
+        "Precipitation_accumulated": 4.935832912993256,
+        "Humidity": 3.3042888249539093,
+        "Soil_Moisture": 492.7729947418614,
+        "Soil_Temperature": 1.51270042425578
+    },
+    "MAE": {
+        "Temperature": 1.873534712567927,
+        "Precipitation_accumulated": 4.8211263514618965,
+        "Humidity": 2.7662503132529377,
+        "Soil_Moisture": 449.83725471630186,
+        "Soil_Temperature": 1.3746368210032172
+    },
+    "R2": {
+        "Temperature": -6.1454007531395245,
+        "Precipitation_accumulated": -602.1446729303881,
+        "Humidity": -0.14988650946718307,
+        "Soil_Moisture": -5.625289656773276,
+        "Soil_Temperature": -9.899644853736461
+    },
+    "SMAPE": {
+        "Temperature": 18.5313759386217,
+        "Precipitation_accumulated": 1.057417729757175,
+        "Humidity": 3.0393232379017863,
+        "Soil_Moisture": 7.347359756871458,
+        "Soil_Temperature": 13.126543257917834
+    },
+    "WMAPE": {
+        "Temperature": 20.15441436616786,
+        "Precipitation_accumulated": 1.0516738712354043,
+        "Humidity": 3.0369013711666852,
+        "Soil_Moisture": 7.574330091462545,
+        "Soil_Temperature": 14.030982724220156
+    }
+}
