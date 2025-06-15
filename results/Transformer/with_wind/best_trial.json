@@ -1,0 +1,17 @@
+{
+    "best_value": 65.26404829312314,
+    "best_params": {
+        "input_chunk_length": 36,
+        "dropout": 0.25,
+        "batch_size": 64,
+        "lr": 0.0017696354504938665,
+        "weight_decay": 0.008497409733746497,
+        "dmodel_nhead": [
+            200,
+            8
+        ],
+        "num_encoder_layers": 1,
+        "num_decoder_layers": 6,
+        "activation": "ReLU"
+    }
+}
