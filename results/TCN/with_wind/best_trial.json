@@ -1,0 +1,15 @@
+{
+    "best_value": 85.05562838507672,
+    "best_params": {
+        "input_chunk_length": 36,
+        "dropout": 0.2,
+        "batch_size": 104,
+        "lr": 0.0019489201964000883,
+        "weight_decay": 0.0008481827512796138,
+        "num_filters": 144,
+        "kernel_size": 4,
+        "num_layers": 2,
+        "dilation_base": 1,
+        "weight_norm": false
+    }
+}

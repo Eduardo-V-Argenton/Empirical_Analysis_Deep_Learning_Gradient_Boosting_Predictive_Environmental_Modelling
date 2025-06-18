@@ -1,0 +1,18 @@
+{
+    "best_value": 7.2653081138863485,
+    "best_params": {
+        "input_chunk_length": 48,
+        "hidden_size": 64,
+        "dropout": 0.2,
+        "batch_size": 96,
+        "lr": 0.004891850068754252,
+        "weight_decay": 0.000356508833456918,
+        "num_encoder_layers": 3,
+        "num_decoder_layers": 4,
+        "temporal_width_past": 3,
+        "temporal_width_future": 3,
+        "use_reversible_instance_norm": true,
+        "temporal_hidden_size_past": 72,
+        "temporal_hidden_size_future": 156
+    }
+}

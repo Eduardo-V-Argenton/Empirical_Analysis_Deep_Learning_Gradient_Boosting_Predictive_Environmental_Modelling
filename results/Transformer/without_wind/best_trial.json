@@ -1,0 +1,15 @@
+{
+    "best_value": 62.29155632988628,
+    "best_params": {
+        "input_chunk_length": 72,
+        "dropout": 0.4,
+        "batch_size": 112,
+        "lr": 3.371095418689331e-05,
+        "weight_decay": 1.302793079680627e-06,
+        "nhead": 8,
+        "d_model": 240,
+        "num_encoder_layers": 1,
+        "num_decoder_layers": 3,
+        "activation": "SwiGLU"
+    }
+}

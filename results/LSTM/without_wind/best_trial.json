@@ -1,0 +1,12 @@
+{
+    "best_value": 60.23985809151379,
+    "best_params": {
+        "input_chunk_length": 24,
+        "hidden_size": 256,
+        "layer_size": 2,
+        "dropout": 0.5,
+        "batch_size": 112,
+        "lr": 0.0023152837587172353,
+        "weight_decay": 0.0001372149130909975
+    }
+}

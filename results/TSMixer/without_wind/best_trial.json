@@ -1,0 +1,16 @@
+{
+    "best_value": 27.043267276794655,
+    "best_params": {
+        "input_chunk_length": 60,
+        "hidden_size": 104,
+        "dropout": 0.2,
+        "batch_size": 72,
+        "lr": 0.00018083790028981456,
+        "weight_decay": 1.6920943741798153e-05,
+        "ff_size": 245,
+        "num_blocks": 3,
+        "activation": "ReLU",
+        "norm_type": "LayerNorm",
+        "normalize_before": false
+    }
+}

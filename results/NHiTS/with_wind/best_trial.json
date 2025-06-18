@@ -1,0 +1,15 @@
+{
+    "best_value": 82.99427929841275,
+    "best_params": {
+        "input_chunk_length": 60,
+        "dropout": 0.35,
+        "batch_size": 208,
+        "lr": 0.00013929636378647018,
+        "weight_decay": 2.784544338277865e-05,
+        "num_layers": 5,
+        "num_blocks": 3,
+        "num_stacks": 3,
+        "layer_widths": 32,
+        "activation": "ReLU"
+    }
+}

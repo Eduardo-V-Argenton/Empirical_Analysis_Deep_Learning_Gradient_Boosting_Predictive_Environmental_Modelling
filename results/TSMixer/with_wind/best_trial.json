@@ -1,0 +1,16 @@
+{
+    "best_value": 75.31818223557848,
+    "best_params": {
+        "input_chunk_length": 72,
+        "hidden_size": 64,
+        "dropout": 0.4,
+        "batch_size": 104,
+        "lr": 0.0034622439183209846,
+        "weight_decay": 0.0003418366393068562,
+        "ff_size": 231,
+        "num_blocks": 1,
+        "activation": "GELU",
+        "norm_type": "LayerNorm",
+        "normalize_before": false
+    }
+}
