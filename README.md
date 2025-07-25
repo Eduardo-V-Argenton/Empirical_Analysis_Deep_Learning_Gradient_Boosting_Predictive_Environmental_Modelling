@@ -1,7 +1,7 @@
 
 ---
 
-# 🌦️ A Unified Benchmark of Deep Learning and Gradient Boosting Models for Multivariate Autoregressive Weather Forecasting
+# 🌦️ An Empirical Analysis of Deep Learning and Gradient Boosting Models for Predictive Environmental Modelling
 
 This repository contains the code and experiments for the paper:
 **"A Unified Benchmark of Deep Learning and Gradient Boosting Models for Multivariate Autoregressive Weather Forecasting with Real-World Data."**
